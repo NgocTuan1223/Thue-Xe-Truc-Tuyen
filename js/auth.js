@@ -1,49 +1,111 @@
 /**
- * MOTO GO - AUTHENTICATION LOGIC (js/auth.js)
- * Xử lý Đăng nhập & Đăng ký cho Khách thuê xe và Người cho thuê
- * Sau khi đăng nhập/đăng ký:
- *   - Khách hàng (customer) -> Di chuyển sang Trang chủ Người thuê (index.html)
- *   - Người cho thuê (owner) -> Di chuyển sang Trang chủ Người cho thuê (owner.html)
- * Dữ liệu tài khoản được lưu trực tiếp vào MongoDB với mục USES
+ * ==========================================================================
+ * MotoGo - KỊCH BẢN XÁC THỰC (AUTHENTICATION SCRIPT)
+ * Hỗ trợ: Đăng nhập / Đăng ký song song Khách hàng & Chủ xe
+ * Chuẩn: ES6+ (Strict Mode), Tối ưu REST API, Bộ nhớ dự phòng LocalStorage
+ * ==========================================================================
  */
+'use strict';
 
-// Danh sách các cổng API để tự động dò tìm Server Express
-const API_CANDIDATES = [
-    '/api/auth',
-    'http://localhost:5000/api/auth',
-    'http://127.0.0.1:5000/api/auth'
-];
+// --------------------------------------------------------------------------
+// 1. CẤU HÌNH HỆ THỐNG & ĐỊNH NGHĨA NỘI DUNG VAI TRÒ
+// --------------------------------------------------------------------------
+const AUTH_CONFIG = Object.freeze({
+    apiCandidates: [
+        '/api/auth',
+        'http://localhost:5000/api/auth',
+        'http://127.0.0.1:5000/api/auth'
+    ],
+    localStorageUsersKey: 'motogo_users_db',
+    sessionUserKeys: ['motogo_user', 'currentUser'],
+    requestTimeoutMs: 5000
+});
 
-// Hàm gọi API thông minh: Tự động kết nối Server, có cơ chế Fallback nếu Server chưa bật
+const ROLE_DEFINITIONS = Object.freeze({
+    customer: {
+        tag: "Dành cho Khách hàng",
+        title: "Thuê Xe Nhanh Chóng, Hành Trình Trọn Vẹn",
+        desc: "Chỉ với vài thao tác xác thực, bạn có thể đặt ngay hàng trăm mẫu xe tay ga, xe số và côn tay đời mới với chi phí minh bạch.",
+        benefits: [
+            "Đặt xe trực tuyến, giữ xe 100% đúng mẫu",
+            "Giao nhận xe tận nơi hoặc tại trạm trong 15 phút",
+            "Quản lý lịch sử chuyến đi và chi phí rõ ràng"
+        ],
+        loginBtn: "Đăng nhập với tư cách Khách hàng",
+        regBtn: "Tạo tài khoản Khách hàng",
+        redirectUrl: "index.html",
+        roleName: "Khách hàng"
+    },
+    owner: {
+        tag: "Dành cho Đối tác & Chủ xe",
+        title: "Gia Tăng Thu Nhập Từ Đội Xe Nhàn Rỗi Của Bạn",
+        desc: "Kết nối trực tiếp với hàng ngàn khách hàng có nhu cầu thuê xe mỗi ngày. Hệ thống quản lý lịch đặt, hợp đồng và doanh thu tự động.",
+        benefits: [
+            "Đăng tải và cập nhật trạng thái xe theo thời gian thực",
+            "Xét duyệt yêu cầu thuê xe và xác minh thông tin khách",
+            "Thống kê doanh thu, lịch bảo dưỡng minh bạch 24/7"
+        ],
+        loginBtn: "Đăng nhập Quản lý Cửa hàng",
+        regBtn: "Đăng ký Đối tác Cho thuê xe",
+        redirectUrl: "owner.html",
+        roleName: "Người cho thuê xe"
+    }
+});
+
+// Quản lý State trang Xác thực
+const AuthState = {
+    currentRole: 'customer',
+    currentTab: 'login',
+    isLoading: false
+};
+
+// Bộ nhớ đệm DOM Elements
+const DOM = {};
+
+// --------------------------------------------------------------------------
+// 2. GIAO TIẾP MẠNG & CƠ CHẾ DỰ PHÒNG (NETWORK API & FALLBACK)
+// --------------------------------------------------------------------------
 async function callAuthApi(endpoint, payload) {
-    for (const base of API_CANDIDATES) {
+    // 1. Thử gọi lần lượt các Endpoint API của Server MongoDB
+    for (const base of AUTH_CONFIG.apiCandidates) {
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), AUTH_CONFIG.requestTimeoutMs);
+
             const res = await fetch(`${base}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
+
             const contentType = res.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
                 const data = await res.json();
                 return { ok: res.ok, status: res.status, data };
             }
         } catch (err) {
-            // Thử cổng tiếp theo
+            // Thử endpoint tiếp theo trong danh sách candidate
         }
     }
 
-    // Dự phòng qua LocalStorage nếu chưa bật node server.js
+    // 2. Tự động kích hoạt cơ chế dự phòng qua LocalStorage nếu chưa bật server backend
     return handleLocalFallback(endpoint, payload);
 }
 
-// Xử lý bộ nhớ tạm LocalStorage khi chưa bật Server
 function handleLocalFallback(endpoint, payload) {
-    const users = JSON.parse(localStorage.getItem('motogo_users_db') || '[]');
+    let users = [];
+    try {
+        users = JSON.parse(localStorage.getItem(AUTH_CONFIG.localStorageUsersKey) || '[]');
+    } catch (e) {
+        users = [];
+    }
 
     if (endpoint === '/register') {
-        const normalizedEmail = payload.email.trim().toLowerCase();
-        const normalizedPhone = payload.phone.trim();
+        const normalizedEmail = (payload.email || '').trim().toLowerCase();
+        const normalizedPhone = (payload.phone || '').trim();
 
         const existingUser = users.find(
             u => u.email === normalizedEmail || u.phone === normalizedPhone
@@ -63,18 +125,19 @@ function handleLocalFallback(endpoint, payload) {
 
         const newUser = {
             id: 'user_' + Date.now(),
-            name: payload.name.trim(),
+            name: (payload.name || '').trim(),
             phone: normalizedPhone,
             email: normalizedEmail,
             password: payload.password,
             role: payload.role,
             shopName: payload.role === 'owner' ? payload.shopName : null,
             fleetSize: payload.role === 'owner' ? payload.fleetSize : null,
-            address: payload.role === 'owner' ? payload.address : null
+            address: payload.role === 'owner' ? payload.address : null,
+            createdAt: new Date().toISOString()
         };
 
         users.push(newUser);
-        localStorage.setItem('motogo_users_db', JSON.stringify(users));
+        localStorage.setItem(AUTH_CONFIG.localStorageUsersKey, JSON.stringify(users));
 
         return {
             ok: true,
@@ -87,8 +150,9 @@ function handleLocalFallback(endpoint, payload) {
     }
 
     if (endpoint === '/login') {
-        const cleanEmail = payload.identifier.trim().toLowerCase();
-        const cleanPhone = payload.identifier.trim();
+        const cleanIdentifier = (payload.identifier || '').trim();
+        const cleanEmail = cleanIdentifier.toLowerCase();
+        const cleanPhone = cleanIdentifier;
         const roleLabel = payload.role === 'owner' ? 'Người cho thuê xe' : 'Khách hàng';
 
         const user = users.find(u => u.email === cleanEmail || u.phone === cleanPhone);
@@ -110,7 +174,7 @@ function handleLocalFallback(endpoint, payload) {
                 ok: false,
                 status: 403,
                 data: {
-                    message: `Tài khoản này đã được đăng ký với tư cách "${actualRoleLabel}". Vui lòng chọn đúng vai trò "${actualRoleLabel}" ở phía trên!`
+                    message: `Tài khoản này đã được đăng ký với vai trò "${actualRoleLabel}". Vui lòng chọn đúng vai trò "${actualRoleLabel}" ở phía trên!`
                 }
             };
         }
@@ -132,238 +196,308 @@ function handleLocalFallback(endpoint, payload) {
             }
         };
     }
+
+    return { ok: false, status: 400, data: { message: 'Hành động không hợp lệ!' } };
 }
 
-// Nội dung giao diện bên cột trái theo vai trò
-const roleContent = {
-    customer: {
-        tag: "Dành cho Khách hàng",
-        title: "Thuê Xe Nhanh Chóng, Hành Trình Trọn Vẹn",
-        desc: "Chỉ với vài thao tác xác thực, bạn có thể đặt ngay hàng trăm mẫu xe tay ga, xe số và côn tay đời mới với chi phí minh bạch.",
-        benefits: [
-            "Đặt xe trực tuyến, giữ xe 100% đúng mẫu",
-            "Giao nhận xe tận nơi hoặc tại trạm trong 15 phút",
-            "Quản lý lịch sử chuyến đi và chi phí rõ ràng"
-        ],
-        loginBtn: "Đăng nhập với tư cách Khách hàng",
-        regBtn: "Tạo tài khoản Khách hàng"
-    },
-    owner: {
-        tag: "Dành cho Đối tác & Chủ xe",
-        title: "Gia Tăng Thu Nhập Từ Đội Xe Nhàn Rỗi Của Bạn",
-        desc: "Kết nối trực tiếp với hàng ngàn khách hàng có nhu cầu thuê xe mỗi ngày. Hệ thống quản lý lịch đặt, hợp đồng và doanh thu tự động.",
-        benefits: [
-            "Đăng tải và cập nhật trạng thái xe theo thời gian thực",
-            "Xét duyệt yêu cầu thuê xe và xác minh thông tin khách",
-            "Thống kê doanh thu, lịch bảo dưỡng minh bạch 24/7"
-        ],
-        loginBtn: "Đăng nhập Quản lý Cửa hàng",
-        regBtn: "Đăng ký Đối tác Cho thuê xe"
-    }
-};
-
-let currentRole = 'customer';
-
-// DOM Elements
-const roleButtons = document.querySelectorAll('.role-btn');
-const authTabs = document.querySelectorAll('.auth-tab');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const authMessage = document.getElementById('auth-message');
-const ownerExtraFields = document.getElementById('owner-extra-fields');
-
-const bannerTag = document.getElementById('banner-tag');
-const bannerTitle = document.getElementById('banner-title');
-const bannerDesc = document.getElementById('banner-desc');
-const bannerBenefits = document.getElementById('banner-benefits');
-
-const btnSubmitLogin = document.getElementById('btn-submit-login');
-const btnSubmitRegister = document.getElementById('btn-submit-register');
-
-// Hiển thị thông báo trạng thái
+// --------------------------------------------------------------------------
+// 3. ĐIỀU KHIỂN GIAO DIỆN (UI CONTROLLERS)
+// --------------------------------------------------------------------------
 function showMessage(text, type = 'error') {
-    authMessage.textContent = text;
-    authMessage.className = `auth-message ${type} show`;
-    setTimeout(() => {
-        if (type !== 'error') {
-            authMessage.classList.remove('show');
-        }
-    }, 5000);
+    if (!DOM.authMessage) return;
+
+    DOM.authMessage.textContent = text;
+    DOM.authMessage.className = `auth-message ${type} show`;
+
+    if (type !== 'error') {
+        setTimeout(() => {
+            if (DOM.authMessage.classList.contains(type)) {
+                DOM.authMessage.classList.remove('show');
+            }
+        }, 5000);
+    }
 }
 
-// 1. CHUYỂN ĐỔI VAI TRÒ (Khách hàng <-> Người cho thuê)
+function clearMessage() {
+    if (!DOM.authMessage) return;
+    DOM.authMessage.textContent = '';
+    DOM.authMessage.className = 'auth-message';
+}
+
 function setRole(role) {
-    currentRole = role;
-    
-    // Cập nhật trạng thái nút
-    roleButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.role === role);
+    if (!ROLE_DEFINITIONS[role]) return;
+    AuthState.currentRole = role;
+
+    // Cập nhật trạng thái active của nút chọn vai trò
+    DOM.roleButtons.forEach(btn => {
+        const isActive = btn.dataset.role === role;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
     });
 
-    // Cập nhật nội dung Banner cột trái
-    const content = roleContent[role];
-    bannerTag.textContent = content.tag;
-    bannerTitle.textContent = content.title;
-    bannerDesc.textContent = content.desc;
-    bannerBenefits.innerHTML = content.benefits.map(b => `<li><i class="fa-solid fa-circle-check"></i> ${b}</li>`).join('');
+    // Cập nhật banner thông tin bên cột trái
+    const config = ROLE_DEFINITIONS[role];
+    if (DOM.bannerTag) DOM.bannerTag.textContent = config.tag;
+    if (DOM.bannerTitle) DOM.bannerTitle.textContent = config.title;
+    if (DOM.bannerDesc) DOM.bannerDesc.textContent = config.desc;
 
-    // Cập nhật text nút bấm
-    btnSubmitLogin.textContent = content.loginBtn;
-    btnSubmitRegister.textContent = content.regBtn;
-
-    // Ẩn/Hiện trường bổ sung dành cho người cho thuê xe
-    if (role === 'owner') {
-        ownerExtraFields.classList.remove('hidden');
-    } else {
-        ownerExtraFields.classList.add('hidden');
+    if (DOM.bannerBenefits) {
+        DOM.bannerBenefits.innerHTML = config.benefits
+            .map(item => `<li><i class="fa-solid fa-circle-check"></i> <span>${item}</span></li>`)
+            .join('');
     }
 
-    authMessage.className = 'auth-message';
+    // Cập nhật nhãn của nút gửi biểu mẫu
+    if (DOM.btnSubmitLogin) DOM.btnSubmitLogin.textContent = config.loginBtn;
+    if (DOM.btnSubmitRegister) DOM.btnSubmitRegister.textContent = config.regBtn;
+
+    // Ẩn/Hiện nhóm trường bổ sung cho chủ xe
+    if (DOM.ownerExtraFields) {
+        DOM.ownerExtraFields.classList.toggle('hidden', role !== 'owner');
+    }
+
+    clearMessage();
 }
 
-roleButtons.forEach(btn => {
-    btn.addEventListener('click', () => setRole(btn.dataset.role));
-});
+function switchTab(tabName) {
+    AuthState.currentTab = tabName;
+    const isLogin = tabName === 'login';
 
-// 2. CHUYỂN ĐỔI TAB (Đăng nhập <-> Đăng ký)
-authTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        authTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const isLogin = tab.dataset.tab === 'login';
-        loginForm.classList.toggle('active', isLogin);
-        registerForm.classList.toggle('active', !isLogin);
-        authMessage.className = 'auth-message';
+    DOM.authTabs.forEach(tab => {
+        const isActive = tab.dataset.tab === tabName;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
-});
 
-// 3. ẨN / HIỆN MẬT KHẨU
-document.querySelectorAll('.toggle-pwd').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const input = btn.previousElementSibling;
-        const icon = btn.querySelector('i');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.className = 'fa-regular fa-eye-slash';
-        } else {
-            input.type = 'password';
-            icon.className = 'fa-regular fa-eye';
-        }
-    });
-});
+    if (DOM.loginForm) DOM.loginForm.classList.toggle('active', isLogin);
+    if (DOM.registerForm) DOM.registerForm.classList.toggle('active', !isLogin);
 
-// 4. NÚT TEST NHANH DEMO ACCOUNTS
-document.getElementById('fill-demo-customer')?.addEventListener('click', () => {
-    setRole('customer');
-    document.getElementById('login-identifier').value = 'khachhang@gmail.com';
-    document.getElementById('login-password').value = '123456';
-    showMessage('Đã điền tài khoản Demo Khách hàng. Nhấn "Đăng nhập" để trải nghiệm!', 'info');
-});
+    clearMessage();
+}
 
-document.getElementById('fill-demo-owner')?.addEventListener('click', () => {
-    setRole('owner');
-    document.getElementById('login-identifier').value = 'chuxe@gmail.com';
-    document.getElementById('login-password').value = '123456';
-    showMessage('Đã điền tài khoản Demo Người cho thuê xe. Nhấn "Đăng nhập" để trải nghiệm!', 'info');
-});
+function setButtonLoading(button, isLoading, normalText, loadingText) {
+    if (!button) return;
+    button.disabled = isLoading;
+    if (isLoading) {
+        button.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${loadingText}`;
+    } else {
+        button.innerHTML = normalText;
+    }
+}
 
-// 5. XỬ LÝ ĐĂNG NHẬP (LOGIN)
-loginForm.addEventListener('submit', async (e) => {
+function saveUserSession(user) {
+    const serialized = JSON.stringify(user);
+    AUTH_CONFIG.sessionUserKeys.forEach(key => localStorage.setItem(key, serialized));
+}
+
+// --------------------------------------------------------------------------
+// 4. XỬ LÝ BIỂU MẪU ĐĂNG NHẬP & ĐĂNG KÝ
+// --------------------------------------------------------------------------
+async function handleLoginSubmit(e) {
     e.preventDefault();
-    const identifier = document.getElementById('login-identifier').value.trim();
-    const password = document.getElementById('login-password').value;
+    if (AuthState.isLoading) return;
 
-    btnSubmitLogin.disabled = true;
-    btnSubmitLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác thực...';
+    const identifier = DOM.loginIdentifier?.value.trim() || '';
+    const password = DOM.loginPassword?.value || '';
 
-    const res = await callAuthApi('/login', {
-        identifier,
-        password,
-        role: currentRole
-    });
-
-    btnSubmitLogin.disabled = false;
-    btnSubmitLogin.textContent = roleContent[currentRole].loginBtn;
-
-    if (!res.ok) {
-        showMessage(res.data?.message || 'Đăng nhập không thành công!', 'error');
-        if (res.data?.needRegister) {
-            setTimeout(() => {
-                const regTab = document.querySelector('[data-tab="register"]');
-                if (regTab) regTab.click();
-            }, 1800);
-        }
+    if (!identifier || !password) {
+        showMessage('Vui lòng nhập đầy đủ Email/Số điện thoại và Mật khẩu!', 'error');
         return;
     }
 
-    // Đăng nhập thành công -> Lưu phiên làm việc
-    const user = res.data.user;
-    localStorage.setItem('motogo_user', JSON.stringify(user));
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    const currentConfig = ROLE_DEFINITIONS[AuthState.currentRole];
+    AuthState.isLoading = true;
+    setButtonLoading(DOM.btnSubmitLogin, true, currentConfig.loginBtn, 'Đang xác thực thông tin...');
 
-    const roleName = user.role === 'owner' ? 'Người cho thuê xe' : 'Khách hàng';
-    showMessage(`Đăng nhập thành công với tư cách ${roleName}! Đang chuyển hướng...`, 'success');
+    try {
+        const res = await callAuthApi('/login', {
+            identifier,
+            password,
+            role: AuthState.currentRole
+        });
 
-    // Chuyển hướng sang trang chủ tương ứng
-    setTimeout(() => {
-        if (user.role === 'owner') {
-            window.location.href = 'owner.html'; // Trang chủ của người cho thuê
-        } else {
-            window.location.href = 'index.html'; // Trang chủ của người thuê
+        if (!res.ok) {
+            showMessage(res.data?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại!', 'error');
+
+            if (res.data?.needRegister) {
+                setTimeout(() => switchTab('register'), 1600);
+            }
+            return;
         }
-    }, 1000);
-});
 
-// 6. XỬ LÝ ĐĂNG KÝ (REGISTER) -> LƯU MONGODB MỤC USES
-registerForm.addEventListener('submit', async (e) => {
+        const user = res.data.user;
+        saveUserSession(user);
+
+        const roleName = user.role === 'owner' ? 'Người cho thuê xe' : 'Khách hàng';
+        showMessage(`Đăng nhập thành công với tư cách ${roleName}! Đang chuyển hướng...`, 'success');
+
+        const targetUrl = user.role === 'owner' ? 'owner.html' : 'index.html';
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 900);
+    } catch (err) {
+        showMessage('Đã xảy ra sự cố trong quá trình đăng nhập. Vui lòng thử lại!', 'error');
+    } finally {
+        AuthState.isLoading = false;
+        setButtonLoading(DOM.btnSubmitLogin, false, currentConfig.loginBtn, '');
+    }
+}
+
+async function handleRegisterSubmit(e) {
     e.preventDefault();
-    const name = document.getElementById('reg-name').value.trim();
-    const phone = document.getElementById('reg-phone').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
+    if (AuthState.isLoading) return;
+
+    const name = DOM.regName?.value.trim() || '';
+    const phone = DOM.regPhone?.value.trim() || '';
+    const email = DOM.regEmail?.value.trim() || '';
+    const password = DOM.regPassword?.value || '';
+
+    if (!name || !phone || !email || !password) {
+        showMessage('Vui lòng điền đầy đủ các trường thông tin bắt buộc!', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        showMessage('Mật khẩu bảo mật phải có ít nhất 6 ký tự!', 'error');
+        return;
+    }
 
     const payload = {
         name,
         phone,
         email,
         password,
-        role: currentRole
+        role: AuthState.currentRole
     };
 
-    if (currentRole === 'owner') {
-        payload.shopName = document.getElementById('reg-shop-name').value.trim() || 'Nhà xe ' + name;
-        payload.fleetSize = document.getElementById('reg-fleet-size').value;
-        payload.address = document.getElementById('reg-address').value.trim() || 'Hà Nội';
+    if (AuthState.currentRole === 'owner') {
+        payload.shopName = DOM.regShopName?.value.trim() || `Nhà xe ${name}`;
+        payload.fleetSize = DOM.regFleetSize?.value || '1-5';
+        payload.address = DOM.regAddress?.value.trim() || 'Hà Nội';
     }
 
-    btnSubmitRegister.disabled = true;
-    btnSubmitRegister.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo tài khoản & lưu vào MongoDB...';
+    const currentConfig = ROLE_DEFINITIONS[AuthState.currentRole];
+    AuthState.isLoading = true;
+    setButtonLoading(DOM.btnSubmitRegister, true, currentConfig.regBtn, 'Đang tạo tài khoản & lưu vào MongoDB mục USES...');
 
-    const res = await callAuthApi('/register', payload);
+    try {
+        const res = await callAuthApi('/register', payload);
 
-    btnSubmitRegister.disabled = false;
-    btnSubmitRegister.textContent = roleContent[currentRole].regBtn;
-
-    if (!res.ok) {
-        showMessage(res.data?.message || 'Đăng ký không thành công!', 'error');
-        return;
-    }
-
-    // Đăng ký thành công -> Lưu phiên làm việc
-    const user = res.data.user;
-    localStorage.setItem('motogo_user', JSON.stringify(user));
-    localStorage.setItem('currentUser', JSON.stringify(user));
-
-    const roleName = user.role === 'owner' ? 'Người cho thuê xe' : 'Khách hàng';
-    showMessage(`Đăng ký tài khoản ${roleName} thành công! Đã lưu vào MongoDB mục USES. Đang chuyển hướng...`, 'success');
-
-    // Chuyển hướng sang trang chủ tương ứng
-    setTimeout(() => {
-        if (user.role === 'owner') {
-            window.location.href = 'owner.html'; // Trang chủ của người cho thuê
-        } else {
-            window.location.href = 'index.html'; // Trang chủ của người thuê
+        if (!res.ok) {
+            showMessage(res.data?.message || 'Đăng ký không thành công!', 'error');
+            return;
         }
-    }, 1200);
-});
+
+        const user = res.data.user;
+        saveUserSession(user);
+
+        const roleName = user.role === 'owner' ? 'Người cho thuê xe' : 'Khách hàng';
+        showMessage(`Đăng ký tài khoản ${roleName} thành công! Đã lưu vào MongoDB mục USES. Đang chuyển hướng...`, 'success');
+
+        const targetUrl = user.role === 'owner' ? 'owner.html' : 'index.html';
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 1100);
+    } catch (err) {
+        showMessage('Đã xảy ra sự cố kết nối trong quá trình đăng ký. Vui lòng thử lại!', 'error');
+    } finally {
+        AuthState.isLoading = false;
+        setButtonLoading(DOM.btnSubmitRegister, false, currentConfig.regBtn, '');
+    }
+}
+
+// --------------------------------------------------------------------------
+// 5. GẮN KẾT SỰ KIỆN GIAO DIỆN (EVENT BINDINGS)
+// --------------------------------------------------------------------------
+function cacheDOMElements() {
+    DOM.roleButtons = document.querySelectorAll('.role-btn');
+    DOM.authTabs = document.querySelectorAll('.auth-tab');
+    DOM.loginForm = document.getElementById('login-form');
+    DOM.registerForm = document.getElementById('register-form');
+    DOM.authMessage = document.getElementById('auth-message');
+    DOM.ownerExtraFields = document.getElementById('owner-extra-fields');
+
+    DOM.bannerTag = document.getElementById('banner-tag');
+    DOM.bannerTitle = document.getElementById('banner-title');
+    DOM.bannerDesc = document.getElementById('banner-desc');
+    DOM.bannerBenefits = document.getElementById('banner-benefits');
+
+    DOM.loginIdentifier = document.getElementById('login-identifier');
+    DOM.loginPassword = document.getElementById('login-password');
+    DOM.btnSubmitLogin = document.getElementById('btn-submit-login');
+
+    DOM.regName = document.getElementById('reg-name');
+    DOM.regPhone = document.getElementById('reg-phone');
+    DOM.regEmail = document.getElementById('reg-email');
+    DOM.regPassword = document.getElementById('reg-password');
+    DOM.regShopName = document.getElementById('reg-shop-name');
+    DOM.regFleetSize = document.getElementById('reg-fleet-size');
+    DOM.regAddress = document.getElementById('reg-address');
+    DOM.btnSubmitRegister = document.getElementById('btn-submit-register');
+
+    DOM.fillDemoCustomer = document.getElementById('fill-demo-customer');
+    DOM.fillDemoOwner = document.getElementById('fill-demo-owner');
+    DOM.togglePwdButtons = document.querySelectorAll('.toggle-pwd');
+}
+
+function bindEventListeners() {
+    // 1. Chuyển vai trò
+    DOM.roleButtons.forEach(btn => {
+        btn.addEventListener('click', () => setRole(btn.dataset.role));
+    });
+
+    // 2. Chuyển tab Đăng nhập / Đăng ký
+    DOM.authTabs.forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // 3. Ẩn/Hiện mật khẩu
+    DOM.togglePwdButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.previousElementSibling;
+            const icon = btn.querySelector('i');
+            if (!input || !icon) return;
+
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+            btn.setAttribute('aria-label', isPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        });
+    });
+
+    // 4. Nút điền tài khoản thử nghiệm nhanh (Demo)
+    DOM.fillDemoCustomer?.addEventListener('click', () => {
+        setRole('customer');
+        switchTab('login');
+        if (DOM.loginIdentifier) DOM.loginIdentifier.value = 'khachhang@gmail.com';
+        if (DOM.loginPassword) DOM.loginPassword.value = '123456';
+        showMessage('Đã điền tài khoản mẫu Khách hàng. Nhấn "Đăng nhập" để trải nghiệm!', 'info');
+    });
+
+    DOM.fillDemoOwner?.addEventListener('click', () => {
+        setRole('owner');
+        switchTab('login');
+        if (DOM.loginIdentifier) DOM.loginIdentifier.value = 'chuxe@gmail.com';
+        if (DOM.loginPassword) DOM.loginPassword.value = '123456';
+        showMessage('Đã điền tài khoản mẫu Chủ xe. Nhấn "Đăng nhập" để trải nghiệm!', 'info');
+    });
+
+    // 5. Submit biểu mẫu
+    DOM.loginForm?.addEventListener('submit', handleLoginSubmit);
+    DOM.registerForm?.addEventListener('submit', handleRegisterSubmit);
+}
+
+// --------------------------------------------------------------------------
+// 6. KHỞI TẠO HỆ THỐNG XÁC THỰC (INIT AUTH)
+// --------------------------------------------------------------------------
+function initAuth() {
+    cacheDOMElements();
+    bindEventListeners();
+    setRole('customer');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuth);
+} else {
+    initAuth();
+}

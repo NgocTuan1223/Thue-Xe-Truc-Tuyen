@@ -1,128 +1,193 @@
-/* ==========================================
-   BỐ CỤC CHIA ĐÔI MÀN HÌNH (SPLIT SCREEN)
-   ========================================== */
+/* ==========================================================================
+   MotoGo - BẢNG ĐIỀU KHIỂN XÁC THỰC (AUTH STYLESHEET)
+   Chế độ: Dark Mode & Royal Blue Premium
+   Tương thích: login.html (Khách hàng & Chủ xe)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BỐ CỤC CHIA ĐÔI MÀN HÌNH (SPLIT-SCREEN LAYOUT)
+   -------------------------------------------------------------------------- */
 .auth-wrapper {
     min-height: 100vh;
+    width: 100%;
     display: grid;
     grid-template-columns: 1.05fr 1fr;
-    background-color: var(--bg-main);
+    background-color: var(--bg-main, #060913);
 }
 
-/* ==========================================
-   CỘT TRÁI: BANNER THÔNG TIN
-   ========================================== */
+/* --------------------------------------------------------------------------
+   2. CỘT TRÁI: BANNER THÔNG TIN THƯƠNG HIỆU & GIỚI THIỆU VAI TRÒ
+   -------------------------------------------------------------------------- */
 .auth-banner {
     position: relative;
-    padding: 40px 56px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 48px 56px;
     background:
-        linear-gradient(145deg, rgba(6, 9, 19, 0.92) 0%, rgba(15, 22, 41, 0.85) 55%, rgba(37, 99, 235, 0.28) 100%),
+        linear-gradient(145deg, rgba(6, 9, 19, 0.94) 0%, rgba(15, 22, 41, 0.88) 55%, rgba(37, 99, 235, 0.3) 100%),
         url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    overflow: hidden;
 }
 
+.auth-banner::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.banner-header,
+.banner-content,
+.banner-footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* Nút quay lại trang chủ */
 .back-home {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-secondary);
+    width: fit-content;
+    color: var(--text-secondary, #94a3b8);
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
-    width: fit-content;
-    transition: var(--transition);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm, 6px);
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+    transition: var(--transition, all 0.25s ease);
 }
 
 .back-home:hover {
-    color: var(--accent-cyan);
+    color: var(--accent-cyan, #38bdf8);
+    border-color: rgba(56, 189, 248, 0.25);
+    background-color: rgba(56, 189, 248, 0.08);
     transform: translateX(-4px);
 }
 
+/* Nội dung trung tâm Banner */
 .banner-content {
-    max-width: 500px;
+    max-width: 520px;
     margin: auto 0;
+    padding: 24px 0;
 }
 
 .banner-content .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-size: 2rem;
-    margin-bottom: 20px;
+    font-weight: 800;
+    color: var(--text-primary, #f8fafc);
+    text-decoration: none;
+    margin-bottom: 24px;
 }
 
-.role-Tag {
-    display: inline-block;
-    background-color: rgba(37, 99, 235, 0.2);
-    color: var(--accent-cyan);
+.banner-content .logo i {
+    color: var(--accent-cyan, #38bdf8);
+}
+
+.role-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(37, 99, 235, 0.18);
+    color: var(--accent-cyan, #38bdf8);
     border: 1px solid rgba(56, 189, 248, 0.35);
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
     font-weight: 600;
-    margin-bottom: 14px;
-}
-
-.banner-content h1 {
-    font-size: 2.2rem;
-    line-height: 1.3;
+    letter-spacing: 0.3px;
     margin-bottom: 16px;
 }
 
+.banner-content h1 {
+    font-size: 2.3rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text-primary, #f8fafc);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
 .banner-content p {
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
     font-size: 0.98rem;
+    line-height: 1.6;
     margin-bottom: 28px;
 }
 
+/* Danh sách lợi ích nổi bật */
 .benefit-list {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    padding: 0;
+    margin: 0;
 }
 
 .benefit-list li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     font-size: 0.95rem;
-    color: var(--text-primary);
+    color: var(--text-primary, #f8fafc);
+    line-height: 1.45;
 }
 
-.benefit-list i {
-    color: var(--royal-blue);
-    font-size: 1.1rem;
+.benefit-list li i {
+    color: var(--royal-blue, #2563eb);
+    font-size: 1.15rem;
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .banner-footer p {
-    color: var(--text-secondary);
-    font-size: 0.82rem;
+    color: var(--text-muted, #64748b);
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
-/* ==========================================
-   CỘT PHẢI: KHUNG FORM
-   ========================================== */
+/* --------------------------------------------------------------------------
+   3. CỘT PHẢI: KHUNG ĐIỀU KHIỂN & BIỂU MẪU (AUTH PANEL)
+   -------------------------------------------------------------------------- */
 .auth-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 24px;
+    padding: 48px 32px;
+    overflow-y: auto;
 }
 
 .auth-box {
     width: 100%;
     max-width: 480px;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 32px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    background-color: var(--bg-card, #131c33);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-lg, 16px);
+    padding: 36px 32px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
 }
 
-/* 1. Bộ chọn vai trò */
+/* --------------------------------------------------------------------------
+   4. BỘ CHỌN VAI TRÒ (ROLE SWITCHER: KHÁCH HÀNG / CHỦ XE)
+   -------------------------------------------------------------------------- */
 .role-selector-label {
+    display: block;
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
     margin-bottom: 10px;
     font-weight: 500;
 }
@@ -139,78 +204,134 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    background-color: var(--bg-surface);
-    border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
+    background-color: var(--bg-surface, #0f1629);
+    border: 1.5px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-md, 10px);
+    color: var(--text-secondary, #94a3b8);
     cursor: pointer;
     text-align: left;
-    transition: var(--transition);
+    transition: var(--transition, all 0.25s ease);
+    outline: none;
+}
+
+.role-btn:hover {
+    border-color: var(--border-light, rgba(255, 255, 255, 0.16));
+    background-color: var(--bg-card-hover, #182238);
+    color: var(--text-primary, #f8fafc);
+}
+
+.role-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
 }
 
 .role-btn i {
     font-size: 1.35rem;
-    color: var(--text-secondary);
-    transition: var(--transition);
+    color: var(--text-muted, #64748b);
+    transition: var(--transition, all 0.25s ease);
+    flex-shrink: 0;
 }
 
 .role-btn strong {
     display: block;
     font-size: 0.92rem;
-    color: var(--text-primary);
+    font-weight: 600;
+    color: var(--text-primary, #f8fafc);
 }
 
 .role-btn span {
     font-size: 0.75rem;
     display: block;
+    color: var(--text-secondary, #94a3b8);
     margin-top: 2px;
 }
 
 .role-btn.active {
-    border-color: var(--royal-blue);
+    border-color: var(--royal-blue, #2563eb);
     background-color: rgba(37, 99, 235, 0.14);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .role-btn.active i {
-    color: var(--accent-cyan);
+    color: var(--accent-cyan, #38bdf8);
 }
 
-/* 2. Tabs Đăng nhập / Đăng ký */
+.role-btn.active strong {
+    color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   5. TABS CHUYỂN ĐỔI (ĐĂNG NHẬP / ĐĂNG KÝ)
+   -------------------------------------------------------------------------- */
 .auth-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    background-color: var(--bg-surface);
-    padding: 5px;
-    border-radius: var(--radius-md);
-    margin-bottom: 22px;
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface, #0f1629);
+    padding: 4px;
+    border-radius: var(--radius-md, 10px);
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
 
 .auth-tab {
-    padding: 10px;
+    padding: 10px 14px;
     border: none;
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
     font-weight: 600;
     font-size: 0.92rem;
     border-radius: 7px;
     cursor: pointer;
-    transition: var(--transition);
+    transition: var(--transition, all 0.25s ease);
+    outline: none;
+}
+
+.auth-tab:hover:not(.active) {
+    color: var(--text-primary, #f8fafc);
+}
+
+.auth-tab:focus-visible {
+    box-shadow: 0 0 0 2px var(--royal-blue, #2563eb);
 }
 
 .auth-tab.active {
-    background-color: var(--royal-blue);
-    color: #fff;
+    background-color: var(--royal-blue, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 
-/* 3. Ô nhập liệu có Icon */
+/* --------------------------------------------------------------------------
+   6. BIỂU MẪU & CÁC Ô NHẬP LIỆU (FORM INPUTS)
+   -------------------------------------------------------------------------- */
 .auth-form {
     display: none;
+    animation: fadeInForm 0.3s ease-out;
 }
 
 .auth-form.active {
     display: block;
+}
+
+@keyframes fadeInForm {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-primary, #f8fafc);
+    margin-bottom: 8px;
 }
 
 .input-icon {
@@ -219,92 +340,139 @@
     align-items: center;
 }
 
-.input-icon>i {
+.input-icon > i {
     position: absolute;
     left: 14px;
-    color: var(--text-secondary);
+    color: var(--text-muted, #64748b);
     font-size: 0.95rem;
+    pointer-events: none;
+    transition: var(--transition, all 0.25s ease);
 }
 
 .input-icon input,
 .input-icon select {
     width: 100%;
-    padding: 11px 14px 11px 40px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
+    padding: 11px 42px 11px 40px;
+    background-color: var(--bg-surface, #0f1629);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-md, 10px);
+    color: var(--text-primary, #f8fafc);
     font-size: 0.92rem;
+    font-family: inherit;
     outline: none;
-    transition: var(--transition);
+    transition: var(--transition, all 0.25s ease);
+}
+
+.input-icon input::placeholder {
+    color: var(--text-muted, #64748b);
 }
 
 .input-icon input:focus,
 .input-icon select:focus {
-    border-color: var(--royal-blue);
+    border-color: var(--royal-blue, #2563eb);
+    background-color: rgba(15, 22, 41, 0.95);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
+.input-icon input:focus + i,
+.input-icon:focus-within > i {
+    color: var(--accent-cyan, #38bdf8);
+}
+
+/* Nút ẩn/hiện mật khẩu */
 .toggle-pwd {
     position: absolute;
     right: 12px;
     background: transparent;
     border: none;
-    color: var(--text-secondary);
+    color: var(--text-muted, #64748b);
     cursor: pointer;
     font-size: 1rem;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition, all 0.25s ease);
+    outline: none;
 }
 
 .toggle-pwd:hover {
-    color: var(--text-primary);
+    color: var(--text-primary, #f8fafc);
 }
 
+.toggle-pwd:focus-visible {
+    color: var(--accent-cyan, #38bdf8);
+}
+
+/* Các tùy chọn nhớ mật khẩu & quên mật khẩu */
 .form-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     font-size: 0.85rem;
 }
 
 .checkbox-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
     cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    accent-color: var(--royal-blue, #2563eb);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
 }
 
 .forgot-link {
-    color: var(--accent-cyan);
+    color: var(--accent-cyan, #38bdf8);
     text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition, all 0.25s ease);
 }
 
 .forgot-link:hover {
     text-decoration: underline;
+    color: #60a5fa;
 }
 
-/* Trường bổ sung của Chủ xe */
+/* --------------------------------------------------------------------------
+   7. TRƯỜNG DÀNH RIÊNG CHO ĐỐI TÁC CHỦ XE (OWNER FIELDS)
+   -------------------------------------------------------------------------- */
 .owner-fields {
-    background-color: rgba(37, 99, 235, 0.07);
-    border: 1px dashed rgba(37, 99, 235, 0.45);
-    padding: 14px;
-    border-radius: var(--radius-md);
-    margin-bottom: 16px;
+    background-color: rgba(37, 99, 235, 0.08);
+    border: 1px dashed rgba(56, 189, 248, 0.4);
+    padding: 16px;
+    border-radius: var(--radius-md, 10px);
+    margin-bottom: 18px;
+    animation: fadeInForm 0.3s ease-out;
 }
 
 .owner-fields.hidden {
     display: none;
 }
 
-/* Thông báo lỗi / thành công */
+/* --------------------------------------------------------------------------
+   8. THÔNG BÁO PHẢN HỒI (AUTH MESSAGES)
+   -------------------------------------------------------------------------- */
 .auth-message {
     display: none;
     padding: 12px 14px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-md, 10px);
     font-size: 0.88rem;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     font-weight: 500;
+    line-height: 1.45;
+    animation: fadeInForm 0.25s ease;
+}
+
+.auth-message.show {
+    display: block;
 }
 
 .auth-message.success {
@@ -321,16 +489,27 @@
     color: #f87171;
 }
 
-/* Nút Demo nhanh */
+.auth-message.info {
+    display: block;
+    background-color: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+}
+
+/* --------------------------------------------------------------------------
+   9. TÀI KHOẢN TRẢI NGHIỆM NHANH (DEMO ACCOUNTS)
+   -------------------------------------------------------------------------- */
 .demo-accounts {
-    margin-top: 22px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 0.82rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .demo-btns {
@@ -339,27 +518,103 @@
 }
 
 .btn-demo {
-    background-color: var(--bg-surface);
-    color: var(--accent-cyan);
-    border: 1px solid var(--border-color);
-    padding: 6px 10px;
-    border-radius: 6px;
+    background-color: var(--bg-surface, #0f1629);
+    color: var(--accent-cyan, #38bdf8);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    padding: 6px 12px;
+    border-radius: var(--radius-sm, 6px);
     font-size: 0.78rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: var(--transition);
+    transition: var(--transition, all 0.25s ease);
+    outline: none;
 }
 
 .btn-demo:hover {
-    border-color: var(--royal-blue);
-    background-color: rgba(37, 99, 235, 0.15);
+    border-color: var(--royal-blue, #2563eb);
+    background-color: rgba(37, 99, 235, 0.18);
+    color: #ffffff;
 }
 
-@media (max-width: 920px) {
+.btn-demo:focus-visible {
+    box-shadow: 0 0 0 2px var(--royal-blue, #2563eb);
+}
+
+/* --------------------------------------------------------------------------
+   10. THIẾT KẾ ĐÁP ỨNG ĐA THIẾT BỊ (RESPONSIVE BREAKPOINTS)
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
     .auth-wrapper {
         grid-template-columns: 1fr;
     }
 
     .auth-banner {
         display: none;
+    }
+
+    .auth-panel {
+        padding: 40px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 24px 18px;
+        box-shadow: none;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+    }
+
+    .role-switcher {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .role-btn {
+        padding: 10px 12px;
+    }
+
+    .demo-accounts {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .demo-btns {
+        width: 100%;
+    }
+
+    .btn-demo {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 24px 18px;
+        box-shadow: none;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+    }
+
+    .role-switcher {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .role-btn {
+        padding: 10px 12px;
+    }
+
+    .demo-accounts {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .demo-btns {
+        width: 100%;
+    }
+
+    .btn-demo {
+        flex: 1;
+        text-align: center;
     }
 }

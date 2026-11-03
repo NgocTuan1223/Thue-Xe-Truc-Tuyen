@@ -1,82 +1,3 @@
-/**
- * MOTO GO - OWNER HOMEPAGE SCRIPT (js/owner.js)
- * Điều khiển trang chủ Quản lý của Người cho thuê xe
- */
-
-const DEFAULT_OWNER_BIKES = [
-    {
-        id: "bike-01",
-        name: "Honda AirBlade 160 ABS",
-        category: "scooter",
-        categoryLabel: "Xe Tay Ga",
-        badgeClass: "badge-scooter",
-        price: 180000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "160cc", year: "Đời 2024", fuel: "2.2L/100km" }
-    },
-    {
-        id: "bike-02",
-        name: "Yamaha Exciter 155 VVA",
-        category: "clutch",
-        categoryLabel: "Côn Tay",
-        badgeClass: "badge-clutch",
-        price: 200000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "155cc", year: "Đời 2024", fuel: "2.0L/100km" }
-    },
-    {
-        id: "bike-03",
-        name: "Honda Wave Alpha 110cc",
-        category: "manual",
-        categoryLabel: "Xe Số",
-        badgeClass: "badge-manual",
-        price: 120000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "110cc", year: "Đời 2023", fuel: "1.6L/100km" }
-    },
-    {
-        id: "bike-04",
-        name: "Honda Vision 2024 Smartkey",
-        category: "scooter",
-        categoryLabel: "Xe Tay Ga",
-        badgeClass: "badge-scooter",
-        price: 150000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "110cc", year: "Đời 2024", fuel: "1.8L/100km" }
-    },
-    {
-        id: "bike-05",
-        name: "Honda Winner X ABS V3",
-        category: "clutch",
-        categoryLabel: "Côn Tay",
-        badgeClass: "badge-clutch",
-        price: 190000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "150cc", year: "Đời 2024", fuel: "1.9L/100km" }
-    },
-    {
-        id: "bike-06",
-        name: "Yamaha Sirius FI 115cc",
-        category: "manual",
-        categoryLabel: "Xe Số",
-        badgeClass: "badge-manual",
-        price: 130000,
-        status: "available",
-        statusText: "Sẵn sàng",
-        image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80",
-        specs: { engine: "115cc", year: "Đời 2023", fuel: "1.7L/100km" }
-    }
-];
 
 let ownerBikes = [...DEFAULT_OWNER_BIKES];
 let ownerBookings = [];
@@ -121,8 +42,7 @@ async function loadOwnerBikes() {
         const endpoints = [
             '/api/bikes',
             'http://localhost:5000/api/bikes',
-            'http://127.0.0.1:5000/api/bikes',
-            './data/bikes.json'
+            'http://127.0.0.1:5000/api/bikes'
         ];
 
         for (const url of endpoints) {
@@ -137,7 +57,7 @@ async function loadOwnerBikes() {
                         break;
                     }
                 }
-            } catch (err) {}
+            } catch (err) { }
         }
     } catch (err) {
         console.warn('Dùng danh sách xe mặc định cho chủ xe:', err);
@@ -149,7 +69,7 @@ function updateOwnerKPIs() {
     const total = ownerBikes.length;
     const available = ownerBikes.filter(b => b.status === 'available' || b.status === 'Đang trống' || !b.status).length;
     const renting = ownerBikes.filter(b => b.status === 'renting' || b.status === 'Đang thuê' || b.status === 'reserved').length;
-    
+
     // Doanh thu ước tính từ các xe đang cho thuê
     let revenue = 0;
     ownerBikes.forEach(b => {
@@ -222,7 +142,7 @@ function renderOwnerBikesTable(list) {
 }
 
 // Đổi trạng thái xe nhanh
-window.changeBikeStatus = async function(bikeId, newStatus) {
+window.changeBikeStatus = async function (bikeId, newStatus) {
     const bike = ownerBikes.find(b => b.id === bikeId);
     if (!bike) return;
 
@@ -235,14 +155,14 @@ window.changeBikeStatus = async function(bikeId, newStatus) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, statusText: bike.statusText })
-    }).catch(() => {});
+    }).catch(() => { });
 
     updateOwnerKPIs();
     renderOwnerBikesTable(ownerBikes);
 };
 
 // Xóa xe
-window.deleteOwnerBike = function(bikeId) {
+window.deleteOwnerBike = function (bikeId) {
     if (!confirm('Bạn có chắc chắn muốn xóa mẫu xe này khỏi danh sách cho thuê?')) return;
     ownerBikes = ownerBikes.filter(b => b.id !== bikeId);
     localStorage.setItem('motogo_owner_bikes', JSON.stringify(ownerBikes));
@@ -250,80 +170,134 @@ window.deleteOwnerBike = function(bikeId) {
     renderOwnerBikesTable(ownerBikes);
 };
 
-// 5. TẢI VÀ HIỂN THỊ YÊU CẦU THUÊ XE
-function loadOwnerBookings() {
-    ownerBookings = [
-        {
-            id: 'BK-8921',
-            customerName: 'Trần Văn Nam',
-            customerPhone: '0912 345 678',
-            bikeName: 'Honda Vision 110cc Smartkey',
-            dates: '03/11/2026 - 06/11/2026 (3 ngày)',
-            total: 570000,
-            status: 'pending'
-        },
-        {
-            id: 'BK-5524',
-            customerName: 'Lê Thị Thuỳ Dung',
-            customerPhone: '0988 777 666',
-            bikeName: 'Yamaha Exciter 155 VVA',
-            dates: '02/11/2026 - 04/11/2026 (2 ngày)',
-            total: 500000,
-            status: 'approved'
-        }
-    ];
-
-    renderOwnerBookingsTable();
-}
-
-function renderOwnerBookingsTable() {
+// 5. TẢI VÀ HIỂN THỊ YÊU CẦU THUÊ XE TỪ MONGODB
+async function loadOwnerBookings() {
     const tbody = document.getElementById('owner-booking-list');
     if (!tbody) return;
 
-    tbody.innerHTML = ownerBookings.map(b => {
-        let statusBadge = '<span class="status-pill renting">🟡 Chờ duyệt</span>';
-        let actionBtn = `<button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="approveBooking('${b.id}')"><i class="fa-solid fa-check"></i> Duyệt & Giao xe</button>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Đang tải đơn thuê...
+    </td></tr>`;
 
-        if (b.status === 'approved') {
+    const apiCandidates = ['/api/bookings', 'http://localhost:5000/api/bookings'];
+    let bookings = [];
+
+    for (const url of apiCandidates) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                bookings = Array.isArray(data) ? data : [];
+                break;
+            }
+        } catch { /* thử URL tiếp theo */ }
+    }
+
+    ownerBookings = bookings;
+    renderOwnerBookingsTable(ownerBookings);
+}
+
+function renderOwnerBookingsTable(list) {
+    const tbody = document.getElementById('owner-booking-list');
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;">
+            <i class="fa-solid fa-inbox" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
+            Chưa có đơn thuê xe nào. Khi khách đặt xe sẽ hiện ở đây.
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map(b => {
+        const id       = b.bookingId || b._id || 'N/A';
+        const name     = b.customerName   || 'Khách hàng';
+        const phone    = b.customerPhone  || '---';
+        const bikeName = b.bikeName       || '---';
+        const dates    = `${b.pickupDate || ''} → ${b.returnDate || ''} (${b.days || 1} ngày)`;
+        const total    = b.totalPrice     || 0;
+        const status   = b.status         || 'pending';
+
+        let statusBadge, actionBtn;
+
+        if (status === 'approved') {
             statusBadge = '<span class="status-pill renting">🔵 Đang cho thuê</span>';
-            actionBtn = `<button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.85rem; color: var(--success); border-color: var(--success);" onclick="completeBooking('${b.id}')"><i class="fa-solid fa-flag-checkered"></i> Hoàn tất đơn</button>`;
-        } else if (b.status === 'completed') {
-            statusBadge = '<span class="status-pill available">🟢 Đã hoàn thành</span>';
-            actionBtn = `<span style="font-size: 0.85rem; color: #94a3b8;"><i class="fa-solid fa-circle-check"></i> Đã nhận xe</span>`;
+            actionBtn   = `<button class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;color:var(--status-success,#10b981);border-color:var(--status-success,#10b981);" onclick="completeBooking('${id}')">
+                <i class="fa-solid fa-flag-checkered"></i> Hoàn tất
+            </button>`;
+        } else if (status === 'completed') {
+            statusBadge = '<span class="status-pill available">🟢 Hoàn thành</span>';
+            actionBtn   = '<span style="font-size:0.85rem;color:#94a3b8;"><i class="fa-solid fa-circle-check"></i> Đã trả xe</span>';
+        } else if (status === 'cancelled') {
+            statusBadge = '<span class="status-pill maintenance">🔴 Đã hủy</span>';
+            actionBtn   = '<span style="font-size:0.85rem;color:#94a3b8;">Đã hủy</span>';
+        } else {
+            // pending
+            statusBadge = '<span class="status-pill renting">🟡 Chờ duyệt</span>';
+            actionBtn   = `<button class="btn btn-primary" style="padding:6px 14px;font-size:0.85rem;" onclick="approveBooking('${id}')">
+                <i class="fa-solid fa-check"></i> Duyệt & Giao xe
+            </button>`;
         }
 
         return `
-            <tr>
-                <td><strong style="color: var(--royal-blue); font-family: monospace;">${b.id}</strong></td>
-                <td>
-                    <strong>${b.customerName}</strong>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fa-solid fa-phone"></i> ${b.customerPhone}</div>
-                </td>
-                <td>${b.bikeName}</td>
-                <td style="color: var(--text-secondary);">${b.dates}</td>
-                <td><strong style="color: var(--accent-cyan);">${formatVND(b.total)}</strong></td>
-                <td>${statusBadge}</td>
-                <td style="text-align: right;">${actionBtn}</td>
-            </tr>
-        `;
+        <tr>
+            <td><strong style="color:var(--royal-blue,#2563eb);font-family:monospace;">${id}</strong></td>
+            <td>
+                <strong>${name}</strong>
+                <div style="font-size:0.8rem;color:var(--text-secondary,#94a3b8);">
+                    <i class="fa-solid fa-phone"></i> ${phone}
+                </div>
+            </td>
+            <td>${bikeName}</td>
+            <td style="color:var(--text-secondary,#94a3b8);font-size:0.85rem;">${dates}</td>
+            <td><strong style="color:var(--accent-cyan,#38bdf8);">${formatVND(total)}</strong></td>
+            <td>${statusBadge}</td>
+            <td style="text-align:right;">${actionBtn}</td>
+        </tr>`;
     }).join('');
 }
 
-window.approveBooking = function(bookingId) {
-    const b = ownerBookings.find(item => item.id === bookingId);
-    if (b) {
+window.approveBooking = async function (bookingId) {
+    const b = ownerBookings.find(item => (item.bookingId || item._id) === bookingId);
+    if (!b) return;
+
+    try {
+        const res = await fetch(`/api/bookings/${bookingId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' })
+        });
+        if (res.ok) {
+            b.status = 'approved';
+            renderOwnerBookingsTable(ownerBookings);
+            alert(`✅ Đã duyệt đơn ${bookingId} và ghi nhận bàn giao xe cho khách!`);
+        }
+    } catch {
         b.status = 'approved';
-        renderOwnerBookingsTable();
-        alert(`Đã duyệt đơn ${bookingId} và ghi nhận bàn giao xe cho khách!`);
+        renderOwnerBookingsTable(ownerBookings);
+        alert(`✅ Đã duyệt đơn ${bookingId} (offline).`);
     }
 };
 
-window.completeBooking = function(bookingId) {
-    const b = ownerBookings.find(item => item.id === bookingId);
-    if (b) {
+window.completeBooking = async function (bookingId) {
+    const b = ownerBookings.find(item => (item.bookingId || item._id) === bookingId);
+    if (!b) return;
+
+    try {
+        const res = await fetch(`/api/bookings/${bookingId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed' })
+        });
+        if (res.ok) {
+            b.status = 'completed';
+            renderOwnerBookingsTable(ownerBookings);
+            alert(`🏁 Đơn thuê ${bookingId} đã hoàn tất — khách đã trả xe!`);
+        }
+    } catch {
         b.status = 'completed';
-        renderOwnerBookingsTable();
-        alert(`Đơn thuê ${bookingId} đã hoàn tất nhận xe thành công!`);
+        renderOwnerBookingsTable(ownerBookings);
+        alert(`🏁 Đơn thuê ${bookingId} đã hoàn tất (offline).`);
     }
 };
 
@@ -416,7 +390,7 @@ function initModalEvents() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newBike)
-        }).catch(() => {});
+        }).catch(() => { });
 
         addBikeModal?.classList.remove('active');
         addBikeForm.reset();

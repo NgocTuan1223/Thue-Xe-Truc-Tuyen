@@ -1,38 +1,53 @@
-/* ==========================================
-   1. BIẾN MÀU SẮC & CÀI ĐẶT CƠ BẢN (DARK MODE & ROYAL BLUE)
-   ========================================== */
+/* ==========================================================================
+   MOTOGO - DESIGN SYSTEM & GLOBAL STYLES (css/style.css)
+   Theme: Dark Mode & Royal Blue (#060913, #0f1629, #182238, #2563eb, #38bdf8)
+   ========================================================================== */
+
+/* 1. CSS VARIABLES & THEME TOKENS */
 :root {
-    --bg-main: #060913;
-    /* Đen sâu ánh xanh */
-    --bg-card: #0f1629;
-    /* Nền thẻ cấp 1 */
-    --bg-surface: #182238;
-    /* Nền ô nhập liệu / cấp 2 */
-    --royal-blue: #2563eb;
-    /* Xanh dương hoàng gia chủ đạo */
+    /* Color Palette */
+    --bg-main: #060913;             /* Đen sâu ánh xanh */
+    --bg-card: #0f1629;             /* Nền thẻ / Card */
+    --bg-surface: #182238;          /* Nền ô nhập liệu / Dropdown */
+    --bg-surface-hover: #1f2c49;
+
+    --royal-blue: #2563eb;          /* Xanh dương hoàng gia chủ đạo */
     --royal-blue-hover: #1d4ed8;
-    /* Xanh dương đậm khi hover */
     --royal-glow: rgba(37, 99, 235, 0.35);
-    --accent-cyan: #38bdf8;
-    /* Xanh sáng tạo điểm nhấn giá/icon */
-    --text-primary: #f8fafc;
-    /* Chữ trắng sáng */
-    --text-secondary: #94a3b8;
-    /* Chữ xám phụ */
-    --border-color: #1e293b;
-    /* Viền mảnh */
-    --success: #10b981;
-    /* Xanh lá trạng thái */
+
+    --accent-cyan: #38bdf8;         /* Xanh ngọc sáng tạo điểm nhấn */
+    --accent-cyan-glow: rgba(56, 189, 248, 0.25);
+
+    --text-primary: #f8fafc;        /* Chữ trắng sáng */
+    --text-secondary: #94a3b8;      /* Chữ xám phụ */
+    --text-muted: #64748b;          /* Chữ xám mờ */
+
+    --border-color: #1e293b;        /* Đường viền tiêu chuẩn */
+    --border-hover: #334155;
+
+    /* Semantic Status Colors */
+    --success: #10b981;             /* Xanh lá trạng thái */
+    --warning: #f59e0b;             /* Vàng cam cảnh báo */
+    --danger: #ef4444;              /* Đỏ cảnh báo */
+
+    /* Typography & Spacing */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
-    --transition: all 0.25s ease;
+    --radius-pill: 9999px;
+
+    /* Transition & Shadows */
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.4);
+    --shadow-modal: 0 20px 50px rgba(0, 0, 0, 0.65);
 }
 
-* {
+/* 2. BASE RESET & BOX-SIZING */
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
 }
 
 html {
@@ -42,18 +57,31 @@ html {
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
+    font-family: var(--font-sans);
     line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: 0.95rem;
 }
 
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* ==========================================
-   2. BUTTONS & COMPONENTS CHUNG
-   ========================================== */
+/* 3. BUTTONS & SHARED COMPONENTS */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -64,30 +92,43 @@ body {
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    border: none;
+    border: 1px solid transparent;
     transition: var(--transition);
 }
 
 .btn-primary {
     background-color: var(--royal-blue);
-    color: #fff;
+    color: #ffffff;
     box-shadow: 0 4px 14px var(--royal-glow);
 }
 
 .btn-primary:hover {
     background-color: var(--royal-blue-hover);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
 }
 
 .btn-outline {
     background-color: transparent;
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    border-color: var(--border-color);
 }
 
 .btn-outline:hover {
     border-color: var(--royal-blue);
     background-color: rgba(37, 99, 235, 0.1);
+    color: var(--accent-cyan);
+}
+
+.btn-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.btn-danger:hover {
+    background-color: var(--danger);
+    color: #ffffff;
 }
 
 .btn-full {
@@ -96,50 +137,91 @@ body {
     font-size: 1rem;
 }
 
-/* ==========================================
-   3. HEADER / NAVBAR
-   ========================================== */
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background-color: var(--royal-blue);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.user-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.user-pill i {
+    color: var(--accent-cyan);
+}
+
+/* 4. NAVBAR & HEADER */
 .navbar {
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: rgba(6, 9, 19, 0.85);
+    background-color: rgba(6, 9, 19, 0.92);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
-    padding: 16px 0;
+    padding: 14px 0;
 }
 
 .nav-container {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    gap: 20px;
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    text-decoration: none;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #ffffff;
 }
 
-.logo i,
+.logo i {
+    color: var(--accent-cyan);
+}
+
 .logo span {
     color: var(--royal-blue);
 }
 
 .nav-links {
     display: flex;
+    align-items: center;
     gap: 28px;
 }
 
 .nav-links a {
     color: var(--text-secondary);
-    text-decoration: none;
     font-weight: 500;
-    transition: var(--transition);
+    font-size: 0.95rem;
+    padding: 6px 0;
+    position: relative;
 }
 
 .nav-links a:hover,
@@ -147,96 +229,110 @@ body {
     color: var(--text-primary);
 }
 
-.badge {
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
     background-color: var(--royal-blue);
-    color: #fff;
-    padding: 2px 7px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+    border-radius: 2px;
 }
 
-/* ==========================================
-   4. HERO SECTION & THANH TÌM KIẾM
-   ========================================== */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 5. HERO SECTION & SMART SEARCH */
 .hero {
-    padding: 70px 0 50px;
-    background: radial-gradient(circle at top center, rgba(37, 99, 235, 0.18), transparent 60%);
+    position: relative;
+    padding: 80px 0 60px;
     text-align: center;
+    background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.16) 0%, transparent 65%);
 }
 
 .hero-tag {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: var(--radius-pill);
     background-color: rgba(37, 99, 235, 0.15);
-    color: var(--accent-cyan);
     border: 1px solid rgba(56, 189, 248, 0.3);
-    padding: 6px 14px;
-    border-radius: 30px;
+    color: var(--accent-cyan);
     font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .hero h1 {
-    font-size: 2.6rem;
-    max-width: 750px;
-    margin: 0 auto 16px;
+    font-size: 2.8rem;
+    font-weight: 800;
     line-height: 1.25;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
 }
 
 .hero p {
     color: var(--text-secondary);
-    max-width: 600px;
+    font-size: 1.1rem;
+    max-width: 680px;
     margin: 0 auto 36px;
 }
 
 .search-box {
+    max-width: 980px;
+    margin: 0 auto;
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    padding: 16px;
     border-radius: var(--radius-lg);
+    padding: 16px;
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1.2fr auto;
+    grid-template-columns: 2fr 1.3fr 1.3fr auto;
     gap: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
 .search-input,
 .search-select {
+    position: relative;
     display: flex;
     align-items: center;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 0 14px;
 }
 
 .search-input i,
 .search-select i {
-    color: var(--royal-blue);
-    margin-right: 10px;
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.95rem;
 }
 
 .search-input input,
 .search-select select {
     width: 100%;
-    padding: 12px 0;
-    background: transparent;
-    border: none;
+    padding: 12px 14px 12px 40px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     color: var(--text-primary);
     outline: none;
-    font-size: 0.95rem;
+    transition: var(--transition);
 }
 
-.search-select select option {
-    background-color: var(--bg-card);
-    color: var(--text-primary);
+.search-input input:focus,
+.search-select select:focus {
+    border-color: var(--royal-blue);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
-/* ==========================================
-   5. DANH SÁCH XE (FLEET GRID)
-   ========================================== */
+/* 6. FLEET SECTION & BIKE CARDS */
 .fleet-section {
-    padding: 40px 20px 80px;
+    padding: 60px 0;
 }
 
 .section-header {
@@ -249,19 +345,21 @@ body {
 }
 
 .section-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 4px;
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin-bottom: 6px;
 }
 
 .section-header p {
     color: var(--text-secondary);
+    font-size: 0.95rem;
 }
 
 .category-tabs {
     display: flex;
     gap: 8px;
-    background-color: var(--bg-card);
-    padding: 6px;
+    background-color: var(--bg-surface);
+    padding: 5px;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
 }
@@ -270,9 +368,10 @@ body {
     background: transparent;
     color: var(--text-secondary);
     border: none;
-    padding: 8px 16px;
-    border-radius: 7px;
-    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.88rem;
     cursor: pointer;
     transition: var(--transition);
 }
@@ -280,12 +379,12 @@ body {
 .tab-btn.active,
 .tab-btn:hover {
     background-color: var(--royal-blue);
-    color: #fff;
+    color: #ffffff;
 }
 
 .bike-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
 }
 
@@ -302,13 +401,14 @@ body {
 .bike-card:hover {
     transform: translateY(-6px);
     border-color: var(--royal-blue);
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.2);
 }
 
 .bike-img-wrapper {
     position: relative;
     height: 210px;
     overflow: hidden;
+    background-color: var(--bg-surface);
 }
 
 .bike-img-wrapper img {
@@ -328,9 +428,10 @@ body {
     left: 12px;
     background-color: rgba(6, 9, 19, 0.85);
     backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     color: var(--accent-cyan);
     padding: 4px 12px;
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     font-size: 0.78rem;
     font-weight: 600;
     border: 1px solid rgba(56, 189, 248, 0.3);
@@ -341,15 +442,28 @@ body {
     top: 12px;
     right: 12px;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     font-size: 0.75rem;
     font-weight: 600;
+    line-height: 1;
 }
 
 .status-badge.available {
     background-color: rgba(16, 185, 129, 0.2);
     color: var(--success);
     border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.status-badge.renting {
+    background-color: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(37, 99, 235, 0.4);
+}
+
+.status-badge.maintenance {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .bike-info {
@@ -360,8 +474,10 @@ body {
 }
 
 .bike-title {
-    font-size: 1.2rem;
+    font-size: 1.18rem;
+    font-weight: 700;
     margin-bottom: 12px;
+    color: var(--text-primary);
 }
 
 .bike-specs {
@@ -371,7 +487,7 @@ body {
     padding: 10px 12px;
     border-radius: var(--radius-md);
     margin-bottom: 14px;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: var(--text-secondary);
 }
 
@@ -382,10 +498,17 @@ body {
 
 .bike-perks {
     display: flex;
-    gap: 16px;
-    font-size: 0.85rem;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.82rem;
     color: var(--text-secondary);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+}
+
+.bike-perks span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .bike-perks i {
@@ -394,34 +517,33 @@ body {
 
 .bike-footer {
     margin-top: auto;
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .price-amount {
     font-size: 1.35rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--accent-cyan);
 }
 
 .price-unit {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
 }
 
-/* ==========================================
-   6. MODAL ĐẶT XE
-   ========================================== */
+/* 7. MODAL ĐẶT XE */
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: none;
-    /* Bật thành flex bằng JS khi mở Modal */
     align-items: center;
     justify-content: center;
     z-index: 200;
@@ -439,7 +561,13 @@ body {
     width: 100%;
     max-width: 520px;
     overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-modal);
+    animation: modalFadeIn 0.25s ease;
+}
+
+@keyframes modalFadeIn {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .modal-header {
@@ -454,12 +582,14 @@ body {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     cursor: pointer;
+    line-height: 1;
+    transition: var(--transition);
 }
 
 .btn-close:hover {
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .modal-body {
@@ -481,13 +611,13 @@ body {
     width: 72px;
     height: 52px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .modal-price {
     color: var(--accent-cyan);
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 0.95rem;
 }
 
 .form-row {
@@ -505,6 +635,7 @@ body {
     font-size: 0.85rem;
     color: var(--text-secondary);
     margin-bottom: 6px;
+    font-weight: 500;
 }
 
 .form-group input,
@@ -516,11 +647,13 @@ body {
     border-radius: var(--radius-md);
     color: var(--text-primary);
     outline: none;
+    transition: var(--transition);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     border-color: var(--royal-blue);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
 .price-calculation {
@@ -536,19 +669,19 @@ body {
     justify-content: space-between;
     font-size: 0.9rem;
     margin-bottom: 6px;
+    color: var(--text-secondary);
 }
 
 .total-row {
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid var(--border-color);
-    font-size: 1.05rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--accent-cyan);
 }
 
-/* ==========================================
-   7. FOOTER & RESPONSIVE
-   ========================================== */
+/* 8. FOOTER */
 .footer {
     background-color: var(--bg-card);
     border-top: 1px solid var(--border-color);
@@ -562,11 +695,18 @@ body {
     padding-bottom: 40px;
 }
 
+.footer-col h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
 .footer-col p,
 .footer-col li {
     color: var(--text-secondary);
     font-size: 0.9rem;
-    margin-top: 10px;
+    margin-top: 8px;
     list-style: none;
 }
 
@@ -574,20 +714,49 @@ body {
     border-top: 1px solid var(--border-color);
     text-align: center;
     padding: 20px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-size: 0.85rem;
 }
 
-@media (max-width: 900px) {
+/* 9. RESPONSIVE BREAKPOINTS */
+@media (max-width: 992px) {
+    .hero h1 {
+        font-size: 2.3rem;
+    }
+
     .search-box {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 
     .footer-content {
         grid-template-columns: 1fr;
     }
+}
 
+@media (max-width: 768px) {
     .nav-links {
         display: none;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .search-box {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .category-tabs {
+        width: 100%;
+        overflow-x: auto;
     }
 }
