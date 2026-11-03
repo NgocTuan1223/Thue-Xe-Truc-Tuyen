@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập & Đăng ký - MotoGo</title>
+
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/auth.css">
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+        <!-- CỘT TRÁI: BANNER GIỚI THIỆU THEO VAI TRÒ -->
+        <div class="auth-banner">
+            <a href="index.html" class="back-home">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
+            </a>
+
+            <div class="banner-content">
+                <a href="index.html" class="logo">
+                    <i class="fa-solid fa-motorcycle"></i> Moto<span>Go</span>
+                </a>
+                <span class="role-Tag" id="banner-tag">Dành cho Khách hàng</span>
+                <h1 id="banner-title">Thuê Xe Nhanh Chóng, Hành Trình Trọn Vẹn</h1>
+                <p id="banner-desc">Chỉ với vài thao tác xác thực, bạn có thể đặt ngay hàng trăm mẫu xe tay ga, xe số và
+                    côn tay đời mới với chi phí minh bạch.</p>
+
+                <ul class="benefit-list" id="banner-benefits">
+                    <li><i class="fa-solid fa-circle-check"></i> Đặt xe trực tuyến, giữ xe 100% đúng mẫu</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Giao nhận xe tận nơi hoặc tại trạm trong 15 phút</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Quản lý lịch sử chuyến đi và chi phí rõ ràng</li>
+                </ul>
+            </div>
+
+            <div class="banner-footer">
+                <p>&copy; 2026 MotoGo Platform. Hệ thống kết nối thuê xe máy tự lái.</p>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP / ĐĂNG KÝ -->
+        <div class="auth-panel">
+            <div class="auth-box">
+
+                <!-- 1. CHỌN VAI TRÒ (KHÁCH HÀNG / NGƯỜI CHO THUÊ) -->
+                <div class="role-selector-label">Bạn truy cập với tư cách:</div>
+                <div class="role-switcher">
+                    <button type="button" class="role-btn active" data-role="customer">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                        <div>
+                            <strong>Khách thuê xe</strong>
+                            <span>Tìm & đặt xe di chuyển</span>
+                        </div>
+                    </button>
+                    <button type="button" class="role-btn" data-role="owner">
+                        <i class="fa-solid fa-shop"></i>
+                        <div>
+                            <strong>Người cho thuê</strong>
+                            <span>Đăng xe & quản lý doanh thu</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 2. CHUYỂN ĐỔI ĐĂNG NHẬP / ĐĂNG KÝ -->
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab active" data-tab="login">Đăng nhập</button>
+                    <button type="button" class="auth-tab" data-tab="register">Đăng ký tài khoản</button>
+                </div>
+
+                <!-- Thông báo trạng thái -->
+                <div id="auth-message" class="auth-message"></div>
+
+                <!-- 3. FORM ĐĂNG NHẬP -->
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label>Email hoặc Số điện thoại *</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="text" id="login-identifier" required
+                                placeholder="nhapemail@domain.com hoặc 09xx...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu *</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="login-password" required placeholder="Nhập mật khẩu">
+                            <button type="button" class="toggle-pwd" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" checked> Ghi nhớ đăng nhập
+                        </label>
+                        <a href="#" class="forgot-link">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btn-submit-login">
+                        Đăng nhập với tư cách Khách hàng
+                    </button>
+
+                    <!-- Nút điền nhanh tài khoản Demo để test -->
+                    <div class="demo-accounts">
+                        <span>Tài khoản test nhanh:</span>
+                        <div class="demo-btns">
+                            <button type="button" class="btn-demo" id="fill-demo-customer">Demo Khách hàng</button>
+                            <button type="button" class="btn-demo" id="fill-demo-owner">Demo Chủ xe</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 4. FORM ĐĂNG KÝ -->
+                <form id="register-form" class="auth-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Họ và tên *</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="reg-name" required placeholder="Nguyễn Văn A">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại *</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="tel" id="reg-phone" required placeholder="0905 xxx xxx">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ Email *</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="reg-email" required placeholder="example@gmail.com">
+                        </div>
+                    </div>
+
+                    <!-- Trường dành riêng cho Người cho thuê xe (Tự động hiện khi chọn Chủ xe) -->
+                    <div id="owner-extra-fields" class="owner-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tên cửa hàng / Nhà xe *</label>
+                                <div class="input-icon">
+                                    <i class="fa-solid fa-store"></i>
+                                    <input type="text" id="reg-shop-name" placeholder="VD: Thuê xe Hoàng Gia">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Số lượng xe hiện có</label>
+                                <div class="input-icon">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                    <select id="reg-fleet-size">
+                                        <option value="1-5">Từ 1 - 5 xe</option>
+                                        <option value="6-15">Từ 6 - 15 xe</option>
+                                        <option value="15+">Trên 15 xe</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Địa chỉ bãi xe / Điểm giao nhận *</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <input type="text" id="reg-address" placeholder="Số nhà, tên đường, phường/xã...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu *</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="reg-password" required placeholder="Tối thiểu 6 ký tự">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btn-submit-register">
+                        Tạo tài khoản Khách hàng
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

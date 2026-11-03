@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoGo - Thuê Xe Máy Trực Tuyến</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+    <!-- 1. HEADER / NAVBAR -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-motorcycle"></i> Moto<span>Go</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#home" class="active">Trang chủ</a>
+                <a href="#bikes">Danh sách xe</a>
+                <a href="#policy">Thủ tục thuê</a>
+                <a href="#contact">Liên hệ</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="btn btn-outline" id="btn-my-bookings">
+                    <i class="fa-solid fa-receipt"></i> Đơn của tôi <span class="badge" id="booking-count">0</span>
+                </button>
+                <a href="login.html" class="btn btn-primary" id="nav-login-btn" style="text-decoration: none;">
+                    <i class="fa-solid fa-user"></i> Đăng nhập
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. HERO SECTION & TÌM KIẾM NHANH -->
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <span class="hero-tag">Giao xe tận nơi trong 15 phút</span>
+            <h1>Chinh Phục Mọi Cung Đường Theo Cách Của Bạn</h1>
+            <p>Hệ thống thuê xe máy trực tuyến uy tín, xe đời mới bảo dưỡng định kỳ, thủ tục nhanh gọn và minh bạch giá cả.</p>
+
+            <!-- Thanh lọc và tìm kiếm -->
+            <div class="search-box">
+                <div class="search-input">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-keyword" placeholder="Tìm tên xe (VD: AirBlade, Exciter, Vision...)">
+                </div>
+                <div class="search-select">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <select id="filter-category">
+                        <option value="all">Tất cả dòng xe</option>
+                        <option value="scooter">Xe tay ga</option>
+                        <option value="manual">Xe số</option>
+                        <option value="clutch">Xe côn tay / Phượt</option>
+                    </select>
+                </div>
+                <div class="search-select">
+                    <i class="fa-solid fa-arrow-up-wide-short"></i>
+                    <select id="sort-price">
+                        <option value="default">Sắp xếp giá</option>
+                        <option value="asc">Giá: Thấp đến Cao</option>
+                        <option value="desc">Giá: Cao đến Thấp</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="btn-filter">Tìm xe ngay</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. DANH SÁCH XE (FLEET SECTION) -->
+    <section class="fleet-section container" id="bikes">
+        <div class="section-header">
+            <div>
+                <h2>Đội Xe Sẵn Sàng Phục Vụ</h2>
+                <p>Lựa chọn chiếc xe phù hợp nhất cho hành trình sắp tới của bạn</p>
+            </div>
+            <!-- Nút lọc nhanh bằng Tab -->
+            <div class="category-tabs">
+                <button class="tab-btn active" data-category="all">Tất cả</button>
+                <button class="tab-btn" data-category="scooter">Xe Tay Ga</button>
+                <button class="tab-btn" data-category="manual">Xe Số</button>
+                <button class="tab-btn" data-category="clutch">Côn Tay</button>
+            </div>
+        </div>
+
+        <!-- Lưới hiển thị thẻ xe máy -->
+        <div class="bike-grid" id="bike-list"></div>
+    </section>
+
+    <!-- 4. THỦ TỤC THUÊ XE -->
+    <section class="container" id="policy" style="padding: 40px 20px; margin-top: 30px; border-top: 1px solid var(--border-color);">
+        <div class="section-header" style="margin-bottom: 24px;">
+            <div>
+                <h2>Quy Trình Thuê Xe 3 Bước</h2>
+                <p>Nhanh chóng, tiện lợi, nhận xe chỉ sau vài phút xác thực</p>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px;">
+                <div style="font-size: 1.8rem; color: var(--accent-cyan); font-weight: 800; margin-bottom: 8px;">01</div>
+                <h3 style="margin-bottom: 8px; font-size: 1.1rem;">Chọn mẫu xe yêu thích</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Lựa chọn dòng xe tay ga, xe số hoặc xe côn tay phù hợp với chuyến đi của bạn.</p>
+            </div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px;">
+                <div style="font-size: 1.8rem; color: var(--royal-blue); font-weight: 800; margin-bottom: 8px;">02</div>
+                <h3 style="margin-bottom: 8px; font-size: 1.1rem;">Đặt xe trực tuyến</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Điền họ tên, số điện thoại, ngày nhận/trả và điểm giao xe trong 1 phút.</p>
+            </div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px;">
+                <div style="font-size: 1.8rem; color: var(--success); font-weight: 800; margin-bottom: 8px;">03</div>
+                <h3 style="margin-bottom: 8px; font-size: 1.1rem;">Nhận xe tận nơi</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Nhận xe tại khách sạn, sân bay hoặc cửa hàng kèm 2 mũ bảo hiểm và xăng đầy bình.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. MODAL ĐẶT XE -->
+    <div class="modal-overlay" id="booking-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đặt Thuê Xe Trực Tuyến</h3>
+                <button class="btn-close" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="booking-form" class="modal-body">
+                <div class="selected-bike-summary">
+                    <img src="" id="modal-bike-img" alt="Bike">
+                    <div>
+                        <h4 id="modal-bike-name">Tên xe</h4>
+                        <p class="modal-price"><span id="modal-bike-price">0</span>đ / ngày</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Họ và tên người thuê *</label>
+                        <input type="text" id="customer-name" required placeholder="Nhập họ và tên">
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại *</label>
+                        <input type="tel" id="customer-phone" required placeholder="09xx xxx xxx">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ngày nhận xe *</label>
+                        <input type="date" id="pickup-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày trả xe *</label>
+                        <input type="date" id="return-date" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Địa điểm nhận xe</label>
+                    <select id="pickup-location">
+                        <option value="store">Nhận tại cửa hàng (Miễn phí)</option>
+                        <option value="delivery">Giao xe tận nơi (+30.000đ)</option>
+                    </select>
+                </div>
+
+                <div class="price-calculation">
+                    <div class="calc-row">
+                        <span>Số ngày thuê:</span>
+                        <strong id="total-days">1 ngày</strong>
+                    </div>
+                    <div class="calc-row total-row">
+                        <span>Tổng thanh toán dự kiến:</span>
+                        <strong id="total-price">0đ</strong>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Xác Nhận Đặt Xe</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. FOOTER -->
+    <footer class="footer" id="contact">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <a href="#" class="logo"><i class="fa-solid fa-motorcycle"></i> Moto<span>Go</span></a>
+                <p>Dịch vụ cho thuê xe máy tự lái chuyên nghiệp, hỗ trợ 24/7 trên mọi hành trình.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Thủ tục cần chuẩn bị</h4>
+                <ul>
+                    <li>CCCD gắn chip hoặc Hộ chiếu</li>
+                    <li>Bằng lái xe máy hợp lệ (A1/A2)</li>
+                    <li>Thanh toán linh hoạt khi nhận xe</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Liên hệ hỗ trợ</h4>
+                <ul>
+                    <li><i class="fa-solid fa-phone"></i> Hotline: 0905 123 456</li>
+                    <li><i class="fa-solid fa-clock"></i> Giờ làm việc: 06:30 - 22:00</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 MotoGo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript khởi chạy an toàn ở cuối trang -->
+    <script src="./js/script.js"></script>
+</body>
+
+</html>

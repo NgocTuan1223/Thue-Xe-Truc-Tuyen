@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ Người Cho Thuê - MotoGo Partner</title>
+
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/owner.css">
+</head>
+
+<body>
+
+    <!-- 1. HEADER / NAVBAR DÀNH CHO CHỦ XE -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="owner.html" class="logo">
+                    <i class="fa-solid fa-motorcycle"></i> Moto<span>Go</span>
+                </a>
+                <span class="owner-badge">
+                    <i class="fa-solid fa-shop"></i> Kênh Người Cho Thuê
+                </span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#fleet" class="active"><i class="fa-solid fa-motorcycle"></i> Quản lý đội xe</a>
+                <a href="#bookings"><i class="fa-solid fa-file-invoice-dollar"></i> Đơn thuê xe</a>
+                <a href="#store-info"><i class="fa-solid fa-circle-info"></i> Thông tin cơ sở</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="index.html" class="btn btn-outline" title="Chuyển sang xem giao diện khách hàng">
+                    <i class="fa-solid fa-eye"></i> Xem trang khách thuê
+                </a>
+                <div class="user-pill" id="owner-profile-pill">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span id="owner-name-display">Chủ xe</span>
+                </div>
+                <button class="btn btn-outline" id="btn-owner-logout" title="Đăng xuất khỏi hệ thống">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. BANNER THÔNG TIN CỬA HÀNG / NHÀ XE -->
+    <section class="owner-hero" id="store-info">
+        <div class="container owner-hero-content">
+            <div class="shop-info-box">
+                <div class="shop-avatar">
+                    <i class="fa-solid fa-shop"></i>
+                </div>
+                <div class="shop-meta">
+                    <h1 id="shop-name-title">Cửa Hàng Cho Thuê Xe Máy</h1>
+                    <p>
+                        <span><i class="fa-solid fa-user-check"></i> Chủ sở hữu: <strong id="owner-fullname">Nguyễn Văn
+                                A</strong></span>
+                        <span><i class="fa-solid fa-location-dot"></i> Bãi xe: <span id="shop-address-text">Hà
+                                Nội</span></span>
+                        <span><i class="fa-solid fa-phone"></i> Hotline: <span id="shop-phone-text">09xx xxx
+                                xxx</span></span>
+                        <span><i class="fa-solid fa-warehouse"></i> Quy mô: <span id="shop-fleet-text">1-5
+                                xe</span></span>
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <button class="btn btn-primary" id="btn-open-add-bike" style="padding: 12px 24px; font-size: 1rem;">
+                    <i class="fa-solid fa-plus-circle"></i> Đăng Thêm Xe Mới
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <main class="container">
+
+        <!-- 3. BẢNG THỐNG KÊ KPI HOẠT ĐỘNG (REALTIME) -->
+        <section class="kpi-grid">
+            <div class="kpi-card kpi-total">
+                <div class="kpi-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                <div class="kpi-text">
+                    <span class="kpi-title">Tổng số xe trong bãi</span>
+                    <span class="kpi-number" id="kpi-total-bikes">0</span>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-available">
+                <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-text">
+                    <span class="kpi-title">Xe sẵn sàng cho thuê</span>
+                    <span class="kpi-number" id="kpi-available-bikes">0</span>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-renting">
+                <div class="kpi-icon"><i class="fa-solid fa-road"></i></div>
+                <div class="kpi-text">
+                    <span class="kpi-title">Xe đang có khách thuê</span>
+                    <span class="kpi-number" id="kpi-renting-bikes">0</span>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-revenue">
+                <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="kpi-text">
+                    <span class="kpi-title">Doanh thu dự kiến</span>
+                    <span class="kpi-number" id="kpi-total-revenue">0đ</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. QUẢN LÝ ĐỘI XE MÁY (FLEET MANAGEMENT) -->
+        <section id="fleet">
+            <div class="section-toolbar">
+                <div>
+                    <h2><i class="fa-solid fa-list-check" style="color: var(--accent-cyan);"></i> Danh Sách Xe Cho Thuê
+                    </h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+                        Quản lý trạng thái, cập nhật giá thuê và kiểm soát đội xe trực tuyến
+                    </p>
+                </div>
+
+                <div class="toolbar-filters">
+                    <input type="text" id="owner-search-bike" class="toolbar-input"
+                        placeholder="Tìm tên xe, biển số...">
+                    <select id="owner-filter-status" class="toolbar-select">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="available">🟢 Sẵn sàng</option>
+                        <option value="renting">🔵 Đang cho thuê</option>
+                        <option value="maintenance">🔴 Đang bảo dưỡng</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="owner-table-wrapper">
+                <table class="owner-table">
+                    <thead>
+                        <tr>
+                            <th>Ảnh & Mẫu xe</th>
+                            <th>Phân loại</th>
+                            <th>Giá thuê / ngày</th>
+                            <th>Động cơ / Nhiên liệu</th>
+                            <th>Trạng thái xe (Đổi nhanh)</th>
+                            <th style="text-align: right;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="owner-bike-list">
+                        <!-- Rendered by js/owner.js -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 5. QUẢN LÝ ĐƠN THUÊ XE TỪ KHÁCH HÀNG (BOOKING REQUESTS) -->
+        <section id="bookings" style="margin-top: 40px; margin-bottom: 60px;">
+            <div class="section-toolbar">
+                <div>
+                    <h2><i class="fa-solid fa-receipt" style="color: var(--royal-blue);"></i> Yêu Cầu Thuê Xe Của Khách
+                    </h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+                        Xét duyệt đơn đặt xe, xác nhận giao nhận phương tiện và hoàn tất hành trình
+                    </p>
+                </div>
+            </div>
+
+            <div class="owner-table-wrapper">
+                <table class="owner-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Thuê</th>
+                            <th>Xe Thuê</th>
+                            <th>Thời Gian Nhận / Trả</th>
+                            <th>Tổng Chi Phí</th>
+                            <th>Trạng Thái Đơn</th>
+                            <th style="text-align: right;">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="owner-booking-list">
+                        <!-- Rendered by js/owner.js -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 6. MODAL ĐĂNG XE MÁY MỚI -->
+    <div class="modal-overlay" id="add-bike-modal">
+        <div class="modal-box" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-motorcycle" style="color: var(--accent-cyan);"></i> Đăng Xe Máy Cho Thuê Mới
+                </h3>
+                <button class="btn-close" id="close-add-bike-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="add-bike-form" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tên xe máy *</label>
+                        <input type="text" id="new-bike-name" required placeholder="VD: Honda Air Blade 160cc">
+                    </div>
+                    <div class="form-group">
+                        <label>Phân loại dòng xe *</label>
+                        <select id="new-bike-category" required>
+                            <option value="scooter">Xe tay ga (Scooter)</option>
+                            <option value="manual">Xe số tiết kiệm</option>
+                            <option value="clutch">Côn tay / Phượt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Giá thuê / ngày (VNĐ) *</label>
+                        <input type="number" id="new-bike-price" required min="50000" step="10000" placeholder="180000">
+                    </div>
+                    <div class="form-group">
+                        <label>Năm sản xuất / Đời xe</label>
+                        <input type="text" id="new-bike-year" placeholder="2024 - Đời mới">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Động cơ (cc)</label>
+                        <input type="text" id="new-bike-engine" placeholder="125cc / 150cc">
+                    </div>
+                    <div class="form-group">
+                        <label>Tiêu hao nhiên liệu</label>
+                        <input type="text" id="new-bike-fuel" placeholder="2.1L / 100km">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Đường dẫn hình ảnh xe (URL) *</label>
+                    <input type="url" id="new-bike-image" required placeholder="https://images.unsplash.com/...">
+                    <div class="photo-presets">
+                        <span style="font-size: 0.78rem; color: var(--text-secondary); align-self: center;">Mẫu ảnh
+                            nhanh:</span>
+                        <button type="button" class="btn-preset"
+                            data-img="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80">Xe
+                            Tay Ga</button>
+                        <button type="button" class="btn-preset"
+                            data-img="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=700&q=80">Xe
+                            Số</button>
+                        <button type="button" class="btn-preset"
+                            data-img="https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=700&q=80">Côn
+                            Tay</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tiện ích kèm theo</label>
+                    <input type="text" id="new-bike-perks"
+                        placeholder="VD: 2 Mũ bảo hiểm cao cấp, Áo mưa tiện lợi, Bảo hiểm xe">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="btn-save-new-bike" style="margin-top: 10px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đăng Xe Ngay
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script điều khiển trang Owner -->
+    <script src="js/owner.js"></script>
+</body>
+
+</html>

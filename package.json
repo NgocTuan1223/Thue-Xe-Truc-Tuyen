@@ -1,5 +1,26 @@
 {
+  "name": "thue-xe-truc-tuyen",
+  "version": "1.0.0",
+  "description": "Website thuê xe máy trực tuyến OCEAN BIKE",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "express": "^5.2.1"
-  }
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "mongoose": "^9.11.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NgocTuan1223/Thue-Xe-Truc-Tuyen.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NgocTuan1223/Thue-Xe-Truc-Tuyen/issues"
+  },
+  "homepage": "https://github.com/NgocTuan1223/Thue-Xe-Truc-Tuyen#readme"
 }

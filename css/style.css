@@ -1,0 +1,593 @@
+/* ==========================================
+   1. BIẾN MÀU SẮC & CÀI ĐẶT CƠ BẢN (DARK MODE & ROYAL BLUE)
+   ========================================== */
+:root {
+    --bg-main: #060913;
+    /* Đen sâu ánh xanh */
+    --bg-card: #0f1629;
+    /* Nền thẻ cấp 1 */
+    --bg-surface: #182238;
+    /* Nền ô nhập liệu / cấp 2 */
+    --royal-blue: #2563eb;
+    /* Xanh dương hoàng gia chủ đạo */
+    --royal-blue-hover: #1d4ed8;
+    /* Xanh dương đậm khi hover */
+    --royal-glow: rgba(37, 99, 235, 0.35);
+    --accent-cyan: #38bdf8;
+    /* Xanh sáng tạo điểm nhấn giá/icon */
+    --text-primary: #f8fafc;
+    /* Chữ trắng sáng */
+    --text-secondary: #94a3b8;
+    /* Chữ xám phụ */
+    --border-color: #1e293b;
+    /* Viền mảnh */
+    --success: #10b981;
+    /* Xanh lá trạng thái */
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --transition: all 0.25s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ==========================================
+   2. BUTTONS & COMPONENTS CHUNG
+   ========================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--royal-blue);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--royal-glow);
+}
+
+.btn-primary:hover {
+    background-color: var(--royal-blue-hover);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover {
+    border-color: var(--royal-blue);
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+.btn-full {
+    width: 100%;
+    padding: 13px;
+    font-size: 1rem;
+}
+
+/* ==========================================
+   3. HEADER / NAVBAR
+   ========================================== */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: rgba(6, 9, 19, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 0;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo i,
+.logo span {
+    color: var(--royal-blue);
+}
+
+.nav-links {
+    display: flex;
+    gap: 28px;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--text-primary);
+}
+
+.badge {
+    background-color: var(--royal-blue);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+/* ==========================================
+   4. HERO SECTION & THANH TÌM KIẾM
+   ========================================== */
+.hero {
+    padding: 70px 0 50px;
+    background: radial-gradient(circle at top center, rgba(37, 99, 235, 0.18), transparent 60%);
+    text-align: center;
+}
+
+.hero-tag {
+    display: inline-block;
+    background-color: rgba(37, 99, 235, 0.15);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.hero h1 {
+    font-size: 2.6rem;
+    max-width: 750px;
+    margin: 0 auto 16px;
+    line-height: 1.25;
+}
+
+.hero p {
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 36px;
+}
+
+.search-box {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.2fr auto;
+    gap: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.search-input,
+.search-select {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0 14px;
+}
+
+.search-input i,
+.search-select i {
+    color: var(--royal-blue);
+    margin-right: 10px;
+}
+
+.search-input input,
+.search-select select {
+    width: 100%;
+    padding: 12px 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.search-select select option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* ==========================================
+   5. DANH SÁCH XE (FLEET GRID)
+   ========================================== */
+.fleet-section {
+    padding: 40px 20px 80px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.section-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+}
+
+.section-header p {
+    color: var(--text-secondary);
+}
+
+.category-tabs {
+    display: flex;
+    gap: 8px;
+    background-color: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+    background-color: var(--royal-blue);
+    color: #fff;
+}
+
+.bike-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+
+.bike-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.bike-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--royal-blue);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.15);
+}
+
+.bike-img-wrapper {
+    position: relative;
+    height: 210px;
+    overflow: hidden;
+}
+
+.bike-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.bike-card:hover .bike-img-wrapper img {
+    transform: scale(1.06);
+}
+
+.bike-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: rgba(6, 9, 19, 0.85);
+    backdrop-filter: blur(6px);
+    color: var(--accent-cyan);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.available {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.bike-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.bike-title {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+.bike-specs {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--bg-surface);
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.bike-specs i {
+    color: var(--royal-blue);
+    margin-right: 4px;
+}
+
+.bike-perks {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.bike-perks i {
+    color: var(--success);
+}
+
+.bike-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-amount {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+}
+
+.price-unit {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   6. MODAL ĐẶT XE
+   ========================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
+    display: none;
+    /* Bật thành flex bằng JS khi mở Modal */
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-box {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 520px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.selected-bike-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--bg-surface);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    border-left: 4px solid var(--royal-blue);
+}
+
+.selected-bike-summary img {
+    width: 72px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.modal-price {
+    color: var(--accent-cyan);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 11px 14px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--royal-blue);
+}
+
+.price-calculation {
+    background-color: rgba(37, 99, 235, 0.1);
+    border: 1px dashed var(--royal-blue);
+    padding: 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+.total-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    font-size: 1.05rem;
+    color: var(--accent-cyan);
+}
+
+/* ==========================================
+   7. FOOTER & RESPONSIVE
+   ========================================== */
+.footer {
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    padding-top: 50px;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+}
+
+.footer-col p,
+.footer-col li {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    list-style: none;
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+    .search-box {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-links {
+        display: none;
+    }
+}

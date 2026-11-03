@@ -1,0 +1,122 @@
+[
+    {
+        "id": "bike-01",
+        "name": "Honda AirBlade 160 ABS",
+        "category": "scooter",
+        "categoryLabel": "Xe Tay Ga",
+        "badgeClass": "badge-scooter",
+        "price": 180000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://files01.danhgiaxe.com/tD4cOywL4OFQfR9kx4U8DKwmQWo=/fit-in/1280x0/20240205/honda-air-blade-2024-1-225709.jpg",
+        "specs": {
+            "engine": "160cc",
+            "year": "Đời 2024",
+            "fuel": "2.2L/100km"
+        },
+        "perks": [
+            "2 Mũ bảo hiểm",
+            "Áo mưa"
+        ]
+    },
+    {
+        "id": "bike-02",
+        "name": "Yamaha Exciter 155 VVA",
+        "category": "clutch",
+        "categoryLabel": "Côn Tay",
+        "badgeClass": "badge-clutch",
+        "price": 200000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "engine": "155cc",
+            "year": "Đời 2024",
+            "fuel": "2.0L/100km"
+        },
+        "perks": [
+            "Giá đỡ điện thoại",
+            "Bảo hiểm"
+        ]
+    },
+    {
+        "id": "bike-03",
+        "name": "Honda Wave Alpha 110cc",
+        "category": "manual",
+        "categoryLabel": "Xe Số",
+        "badgeClass": "badge-manual",
+        "price": 120000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "engine": "110cc",
+            "year": "Đời 2023",
+            "fuel": "1.6L/100km"
+        },
+        "perks": [
+            "2 Mũ bảo hiểm",
+            "Tiết kiệm xăng"
+        ]
+    },
+    {
+        "id": "bike-04",
+        "name": "Honda Vision 2024 Smartkey",
+        "category": "scooter",
+        "categoryLabel": "Xe Tay Ga",
+        "badgeClass": "badge-scooter",
+        "price": 150000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "engine": "110cc",
+            "year": "Đời 2024",
+            "fuel": "1.8L/100km"
+        },
+        "perks": [
+            "Khóa Smartkey",
+            "Cốp rộng"
+        ]
+    },
+    {
+        "id": "bike-05",
+        "name": "Honda Winner X ABS V3",
+        "category": "clutch",
+        "categoryLabel": "Côn Tay",
+        "badgeClass": "badge-clutch",
+        "price": 190000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "engine": "150cc",
+            "year": "Đời 2024",
+            "fuel": "1.9L/100km"
+        },
+        "perks": [
+            "Phanh ABS",
+            "Cổng sạc USB"
+        ]
+    },
+    {
+        "id": "bike-06",
+        "name": "Yamaha Sirius FI 115cc",
+        "category": "manual",
+        "categoryLabel": "Xe Số",
+        "badgeClass": "badge-manual",
+        "price": 130000,
+        "status": "available",
+        "statusText": "Sẵn sàng",
+        "image": "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "engine": "115cc",
+            "year": "Đời 2023",
+            "fuel": "1.65L/100km"
+        },
+        "perks": [
+            "2 Mũ bảo hiểm",
+            "Leo dốc khỏe"
+        ]
+    }
+]

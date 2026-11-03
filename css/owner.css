@@ -1,0 +1,309 @@
+/* ==========================================
+   MOTO GO - OWNER HOMEPAGE STYLES (css/owner.css)
+   Trang chủ dành riêng cho Người cho thuê xe / Chủ xe
+   ========================================== */
+
+/* Header & Role Tag */
+.owner-badge {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(56, 189, 248, 0.25));
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Banner Thông Tin Chủ Xe */
+.owner-hero {
+    padding: 40px 0 25px;
+    background: radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 60%);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+}
+
+.owner-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.shop-info-box {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.shop-avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--royal-blue), var(--accent-cyan));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #fff;
+    box-shadow: 0 8px 24px var(--royal-glow);
+}
+
+.shop-meta h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.shop-meta p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.shop-meta p span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.shop-meta p i {
+    color: var(--accent-cyan);
+}
+
+/* KPI Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 36px;
+}
+
+.kpi-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: var(--transition);
+}
+
+.kpi-card:hover {
+    border-color: var(--royal-blue);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.kpi-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.kpi-total .kpi-icon { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); }
+.kpi-available .kpi-icon { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.kpi-renting .kpi-icon { background: rgba(37, 99, 235, 0.15); color: #60a5fa; }
+.kpi-revenue .kpi-icon { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+.kpi-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-number {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-top: 4px;
+}
+
+/* Section Header & Toolbar */
+.section-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.toolbar-input {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    outline: none;
+    min-width: 260px;
+    transition: var(--transition);
+}
+
+.toolbar-input:focus {
+    border-color: var(--royal-blue);
+}
+
+.toolbar-select {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Table Style */
+.owner-table-wrapper {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    margin-bottom: 40px;
+}
+
+.owner-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.owner-table th {
+    background-color: #0b1122;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.owner-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.92rem;
+    vertical-align: middle;
+}
+
+.owner-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.bike-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.bike-thumb {
+    width: 60px;
+    height: 42px;
+    border-radius: 6px;
+    object-fit: cover;
+    background-color: var(--bg-surface);
+}
+
+.bike-cell-info strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.bike-cell-info span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Status Badges */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.status-pill.available {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pill.renting {
+    background-color: rgba(37, 99, 235, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+.status-pill.maintenance {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-select-btn {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+/* Preset photo buttons inside modal */
+.photo-presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.btn-preset {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.btn-preset:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
