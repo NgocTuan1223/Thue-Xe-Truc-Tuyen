@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Dịch vụ cho thuê xe máy uy tín tại MotoGo - Giao xe tận nơi, cứu hộ 24/7, bảo dưỡng định kỳ và trang bị đầy đủ.">
+    <title>Dịch Vụ - MotoGo</title>
+
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+    <!-- 1. HEADER / NAVBAR -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo" aria-label="MotoGo Trang chủ">
+                <i class="fa-solid fa-motorcycle" aria-hidden="true"></i> Moto<span>Go</span>
+            </a>
+
+            <nav class="nav-links" aria-label="Điều hướng chính">
+                <a href="index.html#home">Trang chủ</a>
+                <a href="index.html#bikes">Danh sách xe</a>
+                <a href="dich-vu.html" class="active">Dịch vụ</a>
+                <a href="index.html#policy">Thủ tục thuê</a>
+                <a href="index.html#contact">Liên hệ</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="index.html" class="btn btn-outline" id="btn-my-bookings" aria-label="Xem đơn thuê của tôi">
+                    <i class="fa-solid fa-receipt" aria-hidden="true"></i> Đơn của tôi <span class="badge"
+                        id="booking-count">0</span>
+                </a>
+                <a href="login.html" class="btn btn-primary" id="nav-login-btn">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i> Đăng nhập
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- 2. SERVICE BANNER / INTRO -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header" style="text-align: center; margin-bottom: 40px;">
+                    <div>
+                        <h2>Dịch Vụ Của MotoGo</h2>
+                        <p>Trải nghiệm dịch vụ thuê xe máy chuyên nghiệp, tiện lợi và an tâm trên từng km</p>
+                    </div>
+                </div>
+
+                <!-- 3. SERVICE GRID (Dữ liệu tải 100% từ MongoDB) -->
+                <div class="service-grid">
+                    <!-- Rendered by js/dich-vu.js -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 4. FOOTER -->
+    <footer class="footer" id="contact">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <a href="index.html" class="logo"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i>
+                    Moto<span>Go</span></a>
+                <p>Dịch vụ cho thuê xe máy tự lái chuyên nghiệp, hỗ trợ 24/7 trên mọi hành trình.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Thủ tục cần chuẩn bị</h4>
+                <ul>
+                    <li>CCCD gắn chip hoặc Hộ chiếu</li>
+                    <li>Bằng lái xe máy hợp lệ (A1/A2)</li>
+                    <li>Thanh toán linh hoạt khi nhận xe</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Liên hệ hỗ trợ</h4>
+                <ul>
+                    <li><i class="fa-solid fa-phone" aria-hidden="true"></i> Hotline: 0905 123 456</li>
+                    <li><i class="fa-solid fa-clock" aria-hidden="true"></i> Giờ làm việc: 06:30 - 22:00</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 MotoGo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Script hiển thị thông tin đăng nhập trên Navbar -->
+    <script src="js/dich-vu.js"></script>
+</body>
+
+</html>
+

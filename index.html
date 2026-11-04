@@ -25,6 +25,7 @@
             <nav class="nav-links" aria-label="Điều hướng chính">
                 <a href="#home" class="active">Trang chủ</a>
                 <a href="#bikes">Danh sách xe</a>
+                <a href="dich-vu.html">Dịch vụ</a>
                 <a href="#policy">Thủ tục thuê</a>
                 <a href="#contact">Liên hệ</a>
             </nav>
@@ -204,6 +205,21 @@
                     </select>
                 </div>
 
+                <!-- Dịch vụ bổ sung từ chủ xe dạng Dropdown Select -->
+                <div class="form-group" id="extra-services-container">
+                    <label for="extra-service-select">
+                        <i class="fa-solid fa-bell-concierge" style="color:var(--accent-cyan);"></i> Dịch vụ tiện ích kèm theo
+                    </label>
+                    <select id="extra-service-select">
+                        <option value="" data-price="0">Không chọn dịch vụ thêm (Mặc định)</option>
+                    </select>
+                </div>
+
+                <!-- Dòng ghi chú chuyển khoản tiền cọc khi chọn giao xe tận nơi -->
+                <div id="deposit-notice" style="display:none; padding:10px 14px; background:rgba(37,99,235,0.12); border:1px dashed var(--royal-blue); border-radius:var(--radius-sm); margin-bottom:14px; font-size:0.86rem; color:var(--accent-cyan); line-height:1.5;">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Lưu ý giao xe tận nơi:</strong> Quý khách vui lòng chuyển khoản trước tiền cọc (50.000đ hoặc tiền ship) theo hướng dẫn sau khi đặt để chủ xe lên lịch xuất phát giao xe.
+                </div>
+
                 <div class="price-calculation">
                     <div class="calc-row">
                         <span>Số ngày thuê:</span>
@@ -219,6 +235,25 @@
                     <i class="fa-solid fa-check" aria-hidden="true"></i> Xác Nhận Đặt Xe
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- 5.2 MODAL LỊCH SỬ THUÊ XE CỦA BẠN (ĐƠN CỦA TÔI) -->
+    <div class="modal-overlay" id="my-bookings-modal" role="dialog" aria-modal="true" aria-labelledby="my-bookings-title">
+        <div class="modal-box" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="my-bookings-title" style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-receipt" style="color: var(--royal-blue);"></i> Lịch Sử Thuê Xe Của Bạn
+                </h3>
+                <button type="button" class="btn-close" id="close-my-bookings-modal" aria-label="Đóng bảng đơn hàng">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 16px 20px 24px;">
+                <div id="my-bookings-list" style="display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto;">
+                    <!-- Rendered by js/script.js -->
+                </div>
+            </div>
         </div>
     </div>
 

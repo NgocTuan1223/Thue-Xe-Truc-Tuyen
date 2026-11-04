@@ -28,6 +28,7 @@
 
             <nav class="nav-links">
                 <a href="#fleet" class="active"><i class="fa-solid fa-motorcycle"></i> Quản lý đội xe</a>
+                <a href="#services"><i class="fa-solid fa-bell-concierge"></i> Quản lý dịch vụ</a>
                 <a href="#bookings"><i class="fa-solid fa-file-invoice-dollar"></i> Đơn thuê xe</a>
                 <a href="#store-info"><i class="fa-solid fa-circle-info"></i> Thông tin cơ sở</a>
             </nav>
@@ -156,7 +157,39 @@
             </div>
         </section>
 
-        <!-- 5. QUẢN LÝ ĐƠN THUÊ XE TỪ KHÁCH HÀNG (BOOKING REQUESTS) -->
+        <!-- 5. QUẢN LÝ DỊCH VỤ CỦA CHỦ XE -->
+        <section id="services" style="margin-top: 40px; margin-bottom: 40px;">
+            <div class="section-toolbar">
+                <div>
+                    <h2><i class="fa-solid fa-bell-concierge" style="color: var(--royal-blue);"></i> Dịch Vụ Của Bạn</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+                        Thêm, sửa hoặc xóa các dịch vụ/tiện ích mà cửa hàng của bạn cung cấp
+                    </p>
+                </div>
+                <button class="btn btn-primary" id="btn-open-add-service">
+                    <i class="fa-solid fa-plus"></i> Thêm Dịch Vụ Mới
+                </button>
+            </div>
+
+            <div class="owner-table-wrapper">
+                <table class="owner-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Icon</th>
+                            <th>Tên Dịch Vụ</th>
+                            <th>Đơn Giá (VNĐ)</th>
+                            <th>Mô Tả Chi Tiết</th>
+                            <th style="text-align: right; width: 140px;">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="owner-service-list">
+                        <!-- Rendered by js/owner.js -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 6. QUẢN LÝ ĐƠN THUÊ XE TỪ KHÁCH HÀNG (BOOKING REQUESTS) -->
         <section id="bookings" style="margin-top: 40px; margin-bottom: 60px;">
             <div class="section-toolbar">
                 <div>
@@ -267,6 +300,52 @@
         </div>
     </div>
 
+
+    <!-- 7. MODAL THÊM / CẬP NHẬT DỊCH VỤ -->
+    <div class="modal-overlay" id="service-modal">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="service-modal-title"><i class="fa-solid fa-bell-concierge" style="color: var(--accent-cyan);"></i> Thêm Dịch Vụ Mới</h3>
+                <button class="btn-close" id="close-service-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="service-form" class="modal-body">
+                <input type="hidden" id="service-edit-id">
+
+                <div class="form-group">
+                    <label>Tên dịch vụ *</label>
+                    <input type="text" id="service-title" required placeholder="VD: Giao xe tận nơi, Cứu hộ 24/7...">
+                </div>
+
+                <div class="form-group">
+                    <label>Giá dịch vụ cộng thêm (VNĐ)</label>
+                    <input type="number" id="service-price" min="0" step="5000" placeholder="0 = Miễn phí, hoặc nhập số tiền (VD: 30000)">
+                </div>
+
+                <div class="form-group">
+                    <label>Mô tả dịch vụ *</label>
+                    <textarea id="service-desc" required rows="3" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary); resize:vertical;" placeholder="Mô tả quyền lợi hoặc quy trình..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Biểu tượng (Icon)</label>
+                    <select id="service-icon" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary);">
+                        <option value="fa-solid fa-truck-fast">🚚 Xe tải / Giao nhanh (fa-truck-fast)</option>
+                        <option value="fa-solid fa-shield-halved">🛡️ Bảo hiểm / An toàn (fa-shield-halved)</option>
+                        <option value="fa-solid fa-screwdriver-wrench">🔧 Cứu hộ / Sửa chữa (fa-screwdriver-wrench)</option>
+                        <option value="fa-solid fa-calendar-check">📅 Thuê linh hoạt (fa-calendar-check)</option>
+                        <option value="fa-solid fa-motorcycle">🏍️ Xe đời mới (fa-motorcycle)</option>
+                        <option value="fa-solid fa-file-signature">📝 Hợp đồng nhanh (fa-file-signature)</option>
+                        <option value="fa-solid fa-gas-pump">⛽ Hỗ trợ xăng xe (fa-gas-pump)</option>
+                        <option value="fa-solid fa-headset">🎧 Hỗ trợ 24/7 (fa-headset)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="btn-save-service" style="margin-top: 10px;">
+                    <i class="fa-solid fa-check"></i> Lưu Dịch Vụ
+                </button>
+            </form>
+        </div>
+    </div>
 
 </body>
 

@@ -1,11 +1,24 @@
+'use strict';
+
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
+// Import toàn bộ DB layer từ database.js
+const {
+  db,
+  memoryUsers,
+  memoryBookings,
+  Bike,
+  User,
+  Booking,
+  Service,
+  connectDatabase,
+  mongoose
+} = require('./database');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/thue_xe_db';
 
 // --------------------------------------------------------------------------
 // 1. CẤU HÌNH MIDDLEWARE HỆ THỐNG
@@ -21,114 +34,12 @@ const asyncHandler = (fn) => (req, res, next) => {
 };
 
 // --------------------------------------------------------------------------
-// 2. KẾT NỐI VÀ QUẢN TRỊ TRẠNG THÁI MONGODB
+// 2. KHỞI ĐỘNG KẾT NỐI DATABASE
 // --------------------------------------------------------------------------
-let isMongoConnected = false;
-const memoryUsers = [];
-const memoryBookings = [];
-
-async function connectDatabase() {
-  try {
-    await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 4000,
-      autoIndex: true
-    });
-    isMongoConnected = true;
-    console.log(' Đã kết nối cơ sở dữ liệu MongoDB thành công (thue_xe_db)!');
-    await seedDatabaseIfEmpty();
-  } catch (err) {
-    isMongoConnected = false;
-    console.warn(' Chưa kết nối được MongoDB service. Kích hoạt bộ nhớ đệm (In-memory Fallback).');
-    console.warn('Chi tiết lỗi kết nối:', err.message);
-  }
-}
-
 connectDatabase();
 
 // --------------------------------------------------------------------------
-// 3. ĐỊNH NGHĨA SCHEMAS & MODELS MONGODB
-// --------------------------------------------------------------------------
-
-// 3.1 Schema & Model Xe Máy (Collection: "bikes")
-const bikeSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true, index: true },
-  name: { type: String, required: true, trim: true },
-  category: { type: String, required: true, enum: ['scooter', 'manual', 'clutch'] },
-  categoryLabel: { type: String, default: 'Xe Máy' },
-  badgeClass: { type: String, default: 'badge-scooter' },
-  price: { type: Number, required: true, min: 0 },
-  status: { type: String, default: 'available' },
-  statusText: { type: String, default: 'Sẵn sàng' },
-  image: { type: String, default: '' },
-  specs: {
-    engine: { type: String, default: '125cc' },
-    year: { type: String, default: '2024' },
-    fuel: { type: String, default: 'Tiết kiệm xăng' }
-  },
-  perks: { type: [String], default: ['2 Mũ bảo hiểm', 'Bảo hiểm chuyến đi'] },
-  ownerEmail: { type: String, default: null }
-}, { timestamps: true, collection: 'bikes' });
-
-const Bike = mongoose.model('Bike', bikeSchema, 'bikes');
-
-// 3.2 Schema & Model Tài Khoản -> LƯU VÀO MỤC "USES" THEO YÊU CẦU NGHIỆP VỤ
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  phone: { type: String, required: true, unique: true, trim: true, index: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['customer', 'owner'], required: true },
-  shopName: { type: String, default: null, trim: true },
-  fleetSize: { type: String, default: null },
-  address: { type: String, default: null, trim: true }
-}, { timestamps: true, collection: 'USES' }); // Luôn lưu vào collection 'USES'
-
-const User = mongoose.model('User', userSchema, 'USES');
-
-// 3.3 Schema & Model Đơn Thuê Xe (Collection: "bookings")
-const bookingSchema = new mongoose.Schema({
-  bookingId: { type: String, required: true, unique: true, index: true },
-  bikeId: { type: String, required: true },
-  bikeName: { type: String, required: true },
-  bikeImage: { type: String, default: '' },
-  customerName: { type: String, required: true, trim: true },
-  customerPhone: { type: String, required: true, trim: true },
-  customerEmail: { type: String, default: null, trim: true },
-  pickupDate: { type: String, required: true },
-  returnDate: { type: String, required: true },
-  days: { type: Number, default: 1, min: 1 },
-  locationType: { type: String, default: 'store' },
-  totalPrice: { type: Number, required: true, min: 0 },
-  status: { type: String, default: 'pending' }, // pending, approved, completed, cancelled
-  ownerEmail: { type: String, default: null }
-}, { timestamps: true, collection: 'bookings' });
-
-const Booking = mongoose.model('Booking', bookingSchema, 'bookings');
-
-// --------------------------------------------------------------------------
-// 4. KHỞI TẠO DỮ LIỆU BAN ĐẦU (SEED DATABASE)
-// --------------------------------------------------------------------------
-
-async function seedDatabaseIfEmpty() {
-  if (!isMongoConnected) return;
-  try {
-    const bikeCount = await Bike.countDocuments();
-    if (bikeCount === 0) {
-      await Bike.insertMany(INITIAL_BIKES);
-      console.log(` Đã tự động tạo mẫu ${INITIAL_BIKES.length} xe máy khởi tạo vào MongoDB collection: bikes`);
-    } else {
-      console.log(` Hiện có ${bikeCount} xe máy trong MongoDB (collection: bikes).`);
-    }
-
-    const usesCount = await User.countDocuments();
-    console.log(` Hiện có ${usesCount} tài khoản trong MongoDB (mục: USES).`);
-  } catch (error) {
-    console.error('Lỗi khi kiểm tra và khởi tạo dữ liệu ban đầu:', error.message);
-  }
-}
-
-// --------------------------------------------------------------------------
-// 5. CÁC ROUTE PHỤC VỤ TRANG GIAO DIỆN (HTML ROUTES)
+// 3. CÁC ROUTE PHỤC VỤ TRANG GIAO DIỆN (HTML ROUTES)
 // --------------------------------------------------------------------------
 
 // Trang chủ Khách thuê xe
@@ -147,10 +58,10 @@ app.get(['/login', '/login.html'], (req, res) => {
 });
 
 // --------------------------------------------------------------------------
-// 6. CÁC API AUTHENTICATION (ĐĂNG KÝ & ĐĂNG NHẬP)
+// 4. CÁC API AUTHENTICATION (ĐĂNG KÝ & ĐĂNG NHẬP)
 // --------------------------------------------------------------------------
 
-// 6.1 API Đăng ký -> LƯU TRỰC TIẾP VÀO MỤC USES TRONG MONGODB
+// 4.1 API Đăng ký -> LƯU TRỰC TIẾP VÀO MỤC USES TRONG MONGODB
 app.post('/api/auth/register', asyncHandler(async (req, res) => {
   const { name, phone, email, password, role, shopName, fleetSize, address } = req.body;
 
@@ -165,7 +76,7 @@ app.post('/api/auth/register', asyncHandler(async (req, res) => {
   const normalizedPhone = phone.trim();
 
   let existingUser = null;
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     existingUser = await User.findOne({
       $or: [{ email: normalizedEmail }, { phone: normalizedPhone }]
     }).lean();
@@ -188,7 +99,7 @@ app.post('/api/auth/register', asyncHandler(async (req, res) => {
     name: name.trim(),
     phone: normalizedPhone,
     email: normalizedEmail,
-    password, // Trong ứng dụng production có thể hash bằng bcryptjs
+    password,  // Trong ứng dụng production có thể hash bằng bcryptjs
     role,
     shopName: role === 'owner' ? (shopName || 'Cửa hàng của tôi') : null,
     fleetSize: role === 'owner' ? (fleetSize || '1-5') : null,
@@ -196,7 +107,7 @@ app.post('/api/auth/register', asyncHandler(async (req, res) => {
   };
 
   let savedUser;
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     savedUser = await User.create(userData);
     console.log(` [MongoDB] Đã lưu tài khoản (${role}) vào mục USES: ${savedUser.email}`);
   } else {
@@ -221,7 +132,7 @@ app.post('/api/auth/register', asyncHandler(async (req, res) => {
   });
 }));
 
-// 6.2 API Đăng nhập
+// 4.2 API Đăng nhập
 app.post('/api/auth/login', asyncHandler(async (req, res) => {
   const { identifier, password, role } = req.body;
 
@@ -237,7 +148,7 @@ app.post('/api/auth/login', asyncHandler(async (req, res) => {
   const roleLabel = role === 'owner' ? 'Người cho thuê xe' : 'Khách thuê xe';
 
   let user = null;
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     user = await User.findOne({
       $or: [{ email: cleanEmail }, { phone: cleanPhone }]
     }).lean();
@@ -288,9 +199,9 @@ app.post('/api/auth/login', asyncHandler(async (req, res) => {
   });
 }));
 
-// 6.3 API Quản trị & Kiểm tra danh sách tài khoản trong mục USES
+// 4.3 API Quản trị & Kiểm tra danh sách tài khoản trong mục USES
 app.get('/api/users', asyncHandler(async (req, res) => {
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     const users = await User.find({}, '-password').sort({ createdAt: -1 }).lean();
     return res.status(200).json({ count: users.length, collection: 'USES', users });
   }
@@ -300,24 +211,25 @@ app.get('/api/users', asyncHandler(async (req, res) => {
 }));
 
 // --------------------------------------------------------------------------
-// 7. CÁC API DÀNH CHO XE MÁY & ĐƠN THUÊ (BIKES & BOOKINGS)
+// 5. CÁC API DÀNH CHO XE MÁY & ĐƠN THUÊ (BIKES & BOOKINGS)
 // --------------------------------------------------------------------------
 
-// 7.1 Lấy danh sách xe máy trực tiếp từ MongoDB (Collection: bikes)
+// 5.1 Lấy danh sách xe máy trực tiếp từ MongoDB (Collection: bikes)
 app.get('/api/bikes', asyncHandler(async (req, res) => {
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     const bikes = await Bike.find().sort({ createdAt: -1 }).lean();
     return res.status(200).json(bikes);
   }
-  return res.status(200).json(INITIAL_BIKES);
+  // MongoDB không kết nối được — trả về mảng rỗng (không dùng seed data)
+  return res.status(503).json({ success: false, message: 'Không thể kết nối cơ sở dữ liệu. Vui lòng thử lại sau!' });
 }));
 
-// 7.2 Người cho thuê thêm xe máy mới vào MongoDB
+// 5.2 Người cho thuê thêm xe máy mới vào MongoDB
 app.post('/api/bikes', asyncHandler(async (req, res) => {
   const bikeData = req.body;
   bikeData.id = bikeData.id || ('bike_' + Date.now());
 
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     const newBike = await Bike.create(bikeData);
     console.log(` Đã lưu xe máy mới vào MongoDB: ${newBike.name}`);
     return res.status(201).json(newBike);
@@ -326,12 +238,12 @@ app.post('/api/bikes', asyncHandler(async (req, res) => {
   return res.status(201).json(bikeData);
 }));
 
-// 7.3 Cập nhật trạng thái xe (Sẵn sàng / Đang thuê / Bảo trì)
+// 5.3 Cập nhật trạng thái xe (Sẵn sàng / Đang thuê / Bảo trì)
 app.put('/api/bikes/:id/status', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status, statusText } = req.body;
 
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     const updated = await Bike.findOneAndUpdate(
       { id },
       { status, statusText },
@@ -347,21 +259,72 @@ app.put('/api/bikes/:id/status', asyncHandler(async (req, res) => {
   return res.status(200).json({ id, status, statusText });
 }));
 
-// 7.4 Lấy danh sách đơn thuê xe từ MongoDB
+// Hàm tự động quét và hủy các đơn treo quá 5 phút mà chủ xe chưa xác nhận (status: pending)
+async function autoCancelExpiredBookings() {
+  if (!db.isMongoConnected) return;
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const expiredBookings = await Booking.find({
+      status: 'pending',
+      createdAt: { $lt: fiveMinutesAgo }
+    });
+
+    if (expiredBookings.length > 0) {
+      await Booking.updateMany(
+        { status: 'pending', createdAt: { $lt: fiveMinutesAgo } },
+        { status: 'cancelled' }
+      );
+      console.log(`[AutoCancel] Đã tự động hủy ${expiredBookings.length} đơn hàng do quá 5 phút chưa được chủ xe xác nhận.`);
+    }
+  } catch (err) {
+    console.error('[AutoCancel] Lỗi khi quét đơn hết hạn:', err.message);
+  }
+}
+
+// Chạy định kỳ mỗi 30 giây để quét đơn hết hạn
+setInterval(autoCancelExpiredBookings, 30000);
+
+// 5.4 Lấy danh sách đơn thuê xe từ MongoDB (hỗ trợ lọc theo customerPhone hoặc customerEmail)
 app.get('/api/bookings', asyncHandler(async (req, res) => {
-  if (isMongoConnected) {
-    const bookings = await Booking.find().sort({ createdAt: -1 }).lean();
+  // Quét nhanh các đơn hết hạn trước khi trả về
+  await autoCancelExpiredBookings();
+
+  const { customerPhone, customerEmail, ownerEmail } = req.query;
+  const conditions = [];
+
+  if (customerPhone && customerPhone.trim()) {
+    conditions.push({ customerPhone: customerPhone.trim() });
+  }
+  if (customerEmail && customerEmail.trim()) {
+    conditions.push({ customerEmail: customerEmail.trim().toLowerCase() });
+  }
+  if (ownerEmail && ownerEmail.trim()) {
+    conditions.push({ ownerEmail: ownerEmail.trim().toLowerCase() });
+  }
+
+  const filter = conditions.length > 0 ? { $or: conditions } : {};
+
+  if (db.isMongoConnected) {
+    const bookings = await Booking.find(filter).sort({ createdAt: -1 }).lean();
     return res.status(200).json(bookings);
   }
-  return res.status(200).json(memoryBookings);
+
+  let list = memoryBookings;
+  if (conditions.length > 0) {
+    list = list.filter(b => 
+      (customerPhone && b.customerPhone === customerPhone.trim()) ||
+      (customerEmail && b.customerEmail === customerEmail.trim().toLowerCase())
+    );
+  }
+  return res.status(200).json(list);
 }));
 
-// 7.5 Tạo đơn thuê xe mới vào MongoDB
+// 5.5 Tạo đơn thuê xe mới vào MongoDB
 app.post('/api/bookings', asyncHandler(async (req, res) => {
   const data = req.body;
   data.bookingId = data.bookingId || ('BK' + Math.floor(100000 + Math.random() * 900000));
 
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     const newBooking = await Booking.create(data);
     console.log(` Đã lưu đơn thuê xe vào MongoDB: ${newBooking.bookingId}`);
     return res.status(201).json(newBooking);
@@ -371,12 +334,42 @@ app.post('/api/bookings', asyncHandler(async (req, res) => {
   return res.status(201).json(data);
 }));
 
-// 7.6 Cập nhật trạng thái đơn thuê (Duyệt, Bàn giao, Hoàn thành, Hủy)
+// 5.6 Cập nhật trạng thái đơn thuê (Duyệt, Bàn giao, Hoàn thành, Hủy)
 app.put('/api/bookings/:id/status', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, cancelReason } = req.body;
 
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
+    // Nếu khách hàng yêu cầu hủy đơn, kiểm tra điều kiện trong vòng 5 phút (300.000 ms)
+    if (status === 'cancelled') {
+      const existing = await Booking.findOne({ bookingId: id });
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy đơn thuê xe!' });
+      }
+
+      if (existing.status === 'approved') {
+        return res.status(400).json({
+          success: false,
+          message: 'Chủ xe đã xác nhận và chuẩn bị bàn giao xe. Quý khách không thể tự hủy đơn trực tuyến, vui lòng liên hệ hotline!'
+        });
+      }
+
+      if (existing.status === 'completed') {
+        return res.status(400).json({ success: false, message: 'Đơn hàng đã hoàn tất, không thể hủy!' });
+      }
+
+      const createdAt = new Date(existing.createdAt).getTime();
+      const now = Date.now();
+      const diffMinutes = (now - createdAt) / (1000 * 60);
+
+      if (diffMinutes > 5) {
+        return res.status(400).json({
+          success: false,
+          message: 'Đã quá thời hạn 5 phút kể từ khi đặt xe. Quý khách không thể tự hủy đơn trực tuyến, vui lòng liên hệ hotline!'
+        });
+      }
+    }
+
     const updated = await Booking.findOneAndUpdate(
       { bookingId: id },
       { status },
@@ -395,14 +388,87 @@ app.put('/api/bookings/:id/status', asyncHandler(async (req, res) => {
 }));
 
 // --------------------------------------------------------------------------
-// 8. API KIỂM TRA TRẠNG THÁI SỨC KHỎE HỆ THỐNG (HEALTH CHECK)
+// 6. CÁC API DÀNH CHO DỊCH VỤ (SERVICES)
+// --------------------------------------------------------------------------
+
+// 6.1 Lấy danh sách dịch vụ (lọc theo chủ xe nếu có ?ownerEmail=)
+app.get('/api/services', asyncHandler(async (req, res) => {
+  const { ownerEmail } = req.query;
+  const filter = ownerEmail ? { ownerEmail } : {};
+
+  if (db.isMongoConnected) {
+    const services = await Service.find(filter).sort({ createdAt: -1 }).lean();
+    return res.status(200).json(services);
+  }
+  return res.status(503).json({ success: false, message: 'Chưa kết nối cơ sở dữ liệu' });
+}));
+
+// 6.2 Thêm dịch vụ mới
+app.post('/api/services', asyncHandler(async (req, res) => {
+  const { title, description, price, icon, ownerEmail } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập tiêu đề và mô tả dịch vụ!' });
+  }
+
+  if (db.isMongoConnected) {
+    const newService = await Service.create({
+      title: title.trim(),
+      description: description.trim(),
+      price: Math.max(0, Number(price) || 0),
+      icon: icon || 'fa-solid fa-truck-fast',
+      ownerEmail: ownerEmail || null
+    });
+    return res.status(201).json(newService);
+  }
+  return res.status(503).json({ success: false, message: 'Chưa kết nối cơ sở dữ liệu' });
+}));
+
+// 6.3 Cập nhật dịch vụ
+app.put('/api/services/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, description, price, icon } = req.body;
+
+  if (db.isMongoConnected) {
+    const updateData = { title, description, icon };
+    if (price !== undefined) updateData.price = Math.max(0, Number(price) || 0);
+
+    const updated = await Service.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).lean();
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy dịch vụ!' });
+    }
+    return res.status(200).json(updated);
+  }
+  return res.status(503).json({ success: false, message: 'Chưa kết nối cơ sở dữ liệu' });
+}));
+
+// 6.4 Xóa dịch vụ
+app.delete('/api/services/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (db.isMongoConnected) {
+    const deleted = await Service.findByIdAndDelete(id).lean();
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy dịch vụ!' });
+    }
+    return res.status(200).json({ success: true, message: 'Đã xóa dịch vụ thành công!' });
+  }
+  return res.status(503).json({ success: false, message: 'Chưa kết nối cơ sở dữ liệu' });
+}));
+
+// --------------------------------------------------------------------------
+// 7. API KIỂM TRA TRẠNG THÁI SỨC KHỎE HỆ THỐNG (HEALTH CHECK)
 // --------------------------------------------------------------------------
 app.get('/api/health', asyncHandler(async (req, res) => {
   let userCount = 0;
   let bikeCount = 0;
   let bookingCount = 0;
 
-  if (isMongoConnected) {
+  if (db.isMongoConnected) {
     [userCount, bikeCount, bookingCount] = await Promise.all([
       User.countDocuments(),
       Bike.countDocuments(),
@@ -413,7 +479,7 @@ app.get('/api/health', asyncHandler(async (req, res) => {
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    mongoConnected: isMongoConnected,
+    mongoConnected: db.isMongoConnected,
     database: 'thue_xe_db',
     collections: {
       users: { name: 'USES', count: userCount },
@@ -424,7 +490,7 @@ app.get('/api/health', asyncHandler(async (req, res) => {
 }));
 
 // --------------------------------------------------------------------------
-// 9. BỘ XỬ LÝ LỖI TRUNG TÂM & 404 (CENTRALIZED ERROR HANDLING MIDDLEWARE)
+// 7. BỘ XỬ LÝ LỖI TRUNG TÂM & 404 (CENTRALIZED ERROR HANDLING MIDDLEWARE)
 // --------------------------------------------------------------------------
 
 // Xử lý Route không tồn tại
@@ -446,14 +512,12 @@ app.use((err, req, res, next) => {
 });
 
 // --------------------------------------------------------------------------
-// 10. KHỞI CHẠY MÁY CHỦ & ĐÓNG KẾT NỐI AN TOÀN (GRACEFUL SHUTDOWN)
+// 8. KHỞI CHẠY MÁY CHỦ & ĐÓNG KẾT NỐI AN TOÀN (GRACEFUL SHUTDOWN)
 // --------------------------------------------------------------------------
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('=================================================');
   console.log(' MOTO GO SERVER ĐANG CHẠY THÀNH CÔNG:');
-
   console.log(`Trang chủ:     http://localhost:${PORT}/index.html`);
-
   console.log('=================================================');
 });
 
@@ -461,7 +525,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 const gracefulShutdown = async () => {
   console.log('\n Đang ngắt kết nối an toàn đến máy chủ MotoGo...');
   server.close(async () => {
-    if (isMongoConnected) {
+    if (db.isMongoConnected) {
       await mongoose.connection.close();
       console.log(' Đã đóng an toàn kết nối MongoDB.');
     }

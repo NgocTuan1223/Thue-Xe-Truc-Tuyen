@@ -1,8 +1,20 @@
 
-let ownerBikes = [...DEFAULT_OWNER_BIKES];
+// Khởi tạo rỗng — dữ liệu 100% từ MongoDB qua API
+let ownerBikes = [];
 let ownerBookings = [];
+let ownerServices = [];
 
 const formatVND = (num) => (num || 0).toLocaleString('vi-VN') + 'đ';
+
+const escapeHTML = (str) => {
+    if (typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
 
 // 1. KIỂM TRA PHIÊN ĐĂNG NHẬP CỦA CHỦ XE
 function initOwnerSession() {
@@ -33,34 +45,45 @@ function initOwnerSession() {
     return user;
 }
 
-// 2. TẢI DANH SÁCH XE CỦA CỬA HÀNG
+// 2. TẢI DANH SÁCH XE CỦA CỬA HÀNG TỪ MONGODB
 async function loadOwnerBikes() {
+    // Hiển thị loading trước
+    const tbody = document.getElementById('owner-bike-list');
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem;"></i><br>Đang tải danh sách xe...
+        </td></tr>`;
+    }
+
+    const endpoints = [
+        '/api/bikes',
+        'http://localhost:5000/api/bikes',
+        'http://127.0.0.1:5000/api/bikes'
+    ];
+
+    for (const url of endpoints) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                // Bình thường hoá — API có thể trả mảng trực tiếp
+                const bikes = Array.isArray(data) ? data : (Array.isArray(data.value) ? data.value : []);
+                ownerBikes = bikes;
+                updateOwnerKPIs();
+                renderOwnerBikesTable(ownerBikes);
+                return;
+            }
+        } catch { /* thử URL tiếp theo */ }
+    }
+
+    // Nếu không kết nối được
+    ownerBikes = [];
     updateOwnerKPIs();
-    renderOwnerBikesTable(ownerBikes);
-
-    try {
-        const endpoints = [
-            '/api/bikes',
-            'http://localhost:5000/api/bikes',
-            'http://127.0.0.1:5000/api/bikes'
-        ];
-
-        for (const url of endpoints) {
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        ownerBikes = data;
-                        updateOwnerKPIs();
-                        renderOwnerBikesTable(ownerBikes);
-                        break;
-                    }
-                }
-            } catch (err) { }
-        }
-    } catch (err) {
-        console.warn('Dùng danh sách xe mặc định cho chủ xe:', err);
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:#94a3b8;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;color:#f59e0b;display:block;margin-bottom:12px;"></i>
+            Không thể kết nối máy chủ. Hãy đảm bảo <code>node server.js</code> đang chạy rồi tải lại trang.
+        </td></tr>`;
     }
 }
 
@@ -210,34 +233,55 @@ function renderOwnerBookingsTable(list) {
     }
 
     tbody.innerHTML = list.map(b => {
-        const id       = b.bookingId || b._id || 'N/A';
-        const name     = b.customerName   || 'Khách hàng';
-        const phone    = b.customerPhone  || '---';
-        const bikeName = b.bikeName       || '---';
-        const dates    = `${b.pickupDate || ''} → ${b.returnDate || ''} (${b.days || 1} ngày)`;
-        const total    = b.totalPrice     || 0;
-        const status   = b.status         || 'pending';
+        const id = b.bookingId || b._id || 'N/A';
+        const name = b.customerName || 'Khách hàng';
+        const phone = b.customerPhone || '---';
+        const bikeName = b.bikeName || '---';
+        const dates = `${b.pickupDate || ''} → ${b.returnDate || ''} (${b.days || 1} ngày)`;
+        const total = b.totalPrice || 0;
+        const status = b.status || 'pending';
 
         let statusBadge, actionBtn;
 
         if (status === 'approved') {
-            statusBadge = '<span class="status-pill renting">🔵 Đang cho thuê</span>';
-            actionBtn   = `<button class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;color:var(--status-success,#10b981);border-color:var(--status-success,#10b981);" onclick="completeBooking('${id}')">
+            const locText = b.locationType === 'delivery' ? '🚚 Đang giao xe' : '🏍️ Xe đã chuẩn bị xong';
+            statusBadge = `<span class="status-pill renting">${locText}</span>`;
+            actionBtn = `<button class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;color:var(--status-success,#10b981);border-color:var(--status-success,#10b981);" onclick="completeBooking('${id}')">
                 <i class="fa-solid fa-flag-checkered"></i> Hoàn tất
             </button>`;
         } else if (status === 'completed') {
-            statusBadge = '<span class="status-pill available">🟢 Hoàn thành</span>';
-            actionBtn   = '<span style="font-size:0.85rem;color:#94a3b8;"><i class="fa-solid fa-circle-check"></i> Đã trả xe</span>';
+            statusBadge = '<span class="status-pill available"> Hoàn thành</span>';
+            actionBtn = '<span style="font-size:0.85rem;color:#94a3b8;"><i class="fa-solid fa-circle-check"></i> Đã trả xe</span>';
         } else if (status === 'cancelled') {
-            statusBadge = '<span class="status-pill maintenance">🔴 Đã hủy</span>';
-            actionBtn   = '<span style="font-size:0.85rem;color:#94a3b8;">Đã hủy</span>';
+            statusBadge = '<span class="status-pill maintenance"> Đã hủy (Hết hạn/Hủy)</span>';
+            actionBtn = '<span style="font-size:0.85rem;color:#94a3b8;">Đã hủy</span>';
         } else {
-            // pending
-            statusBadge = '<span class="status-pill renting">🟡 Chờ duyệt</span>';
-            actionBtn   = `<button class="btn btn-primary" style="padding:6px 14px;font-size:0.85rem;" onclick="approveBooking('${id}')">
-                <i class="fa-solid fa-check"></i> Duyệt & Giao xe
+            // pending: Tính thời gian 5 phút để chủ xe xác nhận
+            const createdAt = b.createdAt ? new Date(b.createdAt).getTime() : Date.now();
+            const elapsedSeconds = Math.floor((Date.now() - createdAt) / 1000);
+            const remainingSeconds = 300 - elapsedSeconds;
+
+            if (remainingSeconds > 0) {
+                const remMinutes = Math.floor(remainingSeconds / 60);
+                const remSecs = remainingSeconds % 60;
+                const timeStr = `${remMinutes}:${remSecs < 10 ? '0' : ''}${remSecs}`;
+                statusBadge = `<span class="status-pill renting" style="border-color:#f59e0b;color:#f59e0b;">⏳ Treo đơn (${timeStr})</span>`;
+            } else {
+                statusBadge = '<span class="status-pill maintenance"> Quá hạn 5p</span>';
+            }
+
+            const approveBtnText = b.locationType === 'delivery' ? 'Duyệt & Giao xe' : 'Duyệt & Chuẩn bị';
+            actionBtn = `<button class="btn btn-primary" style="padding:6px 14px;font-size:0.85rem;" onclick="approveBooking('${id}')">
+                <i class="fa-solid fa-check"></i> ${approveBtnText}
             </button>`;
         }
+
+        // Dịch vụ kèm theo
+        const servicesList = Array.isArray(b.selectedServices) && b.selectedServices.length > 0
+            ? `<div style="font-size:0.75rem; color:var(--accent-cyan); margin-top:2px;">
+                <i class="fa-solid fa-bell-concierge"></i> ${b.selectedServices.map(s => escapeHTML(s.title)).join(', ')}
+               </div>`
+            : '';
 
         return `
         <tr>
@@ -248,7 +292,10 @@ function renderOwnerBookingsTable(list) {
                     <i class="fa-solid fa-phone"></i> ${phone}
                 </div>
             </td>
-            <td>${bikeName}</td>
+            <td>
+                <div>${bikeName}</div>
+                ${servicesList}
+            </td>
             <td style="color:var(--text-secondary,#94a3b8);font-size:0.85rem;">${dates}</td>
             <td><strong style="color:var(--accent-cyan,#38bdf8);">${formatVND(total)}</strong></td>
             <td>${statusBadge}</td>
@@ -275,7 +322,7 @@ window.approveBooking = async function (bookingId) {
     } catch {
         b.status = 'approved';
         renderOwnerBookingsTable(ownerBookings);
-        alert(`✅ Đã duyệt đơn ${bookingId} (offline).`);
+        alert(` Đã duyệt đơn ${bookingId} (offline).`);
     }
 };
 
@@ -353,56 +400,170 @@ function initModalEvents() {
         const price = parseInt(document.getElementById('new-bike-price').value) || 150000;
         const year = document.getElementById('new-bike-year').value.trim() || '2024';
         const engine = document.getElementById('new-bike-engine').value.trim() || '125cc';
-        const fuel = document.getElementById('new-bike-fuel').value.trim() || '2.0L / 100km';
+        const fuel = document.getElementById('new-bike-fuel').value.trim() || '2.0L/100km';
         const image = document.getElementById('new-bike-image').value.trim();
         const perksStr = document.getElementById('new-bike-perks').value.trim();
 
-        const perks = perksStr ? perksStr.split(',').map(s => s.trim()) : ['2 Mũ bảo hiểm', 'Áo mưa'];
+        if (!name) { alert('Vui lòng nhập tên xe!'); return; }
 
-        let categoryLabel = 'Xe Tay Ga';
-        let badgeClass = 'badge-scooter';
-        if (category === 'manual') {
-            categoryLabel = 'Xe Số';
-            badgeClass = 'badge-manual';
-        } else if (category === 'clutch') {
-            categoryLabel = 'Côn Tay';
-            badgeClass = 'badge-clutch';
-        }
+        const perks = perksStr
+            ? perksStr.split(',').map(s => s.trim()).filter(Boolean)
+            : ['2 Mũ bảo hiểm', 'Áo mưa'];
+
+        const categoryMap = {
+            scooter: { label: 'Xe Tay Ga', badge: 'badge-scooter' },
+            manual: { label: 'Xe Số', badge: 'badge-manual' },
+            clutch: { label: 'Côn Tay', badge: 'badge-clutch' }
+        };
+        const cat = categoryMap[category] || categoryMap.scooter;
+
+        const rawUser = localStorage.getItem('motogo_user') || localStorage.getItem('currentUser');
+        const user = rawUser ? JSON.parse(rawUser) : null;
 
         const newBike = {
             id: 'bike_' + Date.now(),
             name,
             category,
-            categoryLabel,
-            badgeClass,
+            categoryLabel: cat.label,
+            badgeClass: cat.badge,
             price,
             status: 'available',
             statusText: 'Sẵn sàng',
             image: image || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80',
             specs: { engine, year, fuel },
-            perks
+            perks,
+            ownerEmail: user?.email || null
         };
 
-        ownerBikes.unshift(newBike);
-        localStorage.setItem('motogo_owner_bikes', JSON.stringify(ownerBikes));
+        // Vô hiệu hoá nút trong lúc gửi
+        const submitBtn = addBikeForm.querySelector('[type="submit"]');
+        const origText = submitBtn?.innerHTML || '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+        }
 
-        fetch('/api/bikes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newBike)
-        }).catch(() => { });
+        try {
+            const apiCandidates = ['/api/bikes', 'http://localhost:5000/api/bikes'];
+            let saved = false;
 
-        addBikeModal?.classList.remove('active');
-        addBikeForm.reset();
+            for (const url of apiCandidates) {
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newBike)
+                    });
+                    if (res.ok) { saved = true; break; }
+                } catch { /* thử URL tiếp theo */ }
+            }
 
-        updateOwnerKPIs();
-        renderOwnerBikesTable(ownerBikes);
+            addBikeModal?.classList.remove('active');
+            addBikeForm.reset();
 
-        alert(`Đã đăng thành công mẫu xe "${name}" lên sàn cho thuê!`);
+            if (saved) {
+                alert(` Đã đăng thành công mẫu xe "${name}" lên MongoDB!\nDanh sách sẽ tự cập nhật.`);
+                await loadOwnerBikes(); // Reload từ API để hiển thị xe mới
+            } else {
+                alert(` Lưu thất bại. Kiểm tra lại kết nối server rồi thử lại.`);
+            }
+        } catch (err) {
+            alert('Có lỗi xảy ra khi thêm xe. Vui lòng thử lại!');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origText;
+            }
+        }
     });
 
     document.getElementById('owner-search-bike')?.addEventListener('input', applyBikeFilter);
     document.getElementById('owner-filter-status')?.addEventListener('change', applyBikeFilter);
+
+    // Sự kiện Modal Dịch Vụ
+    const serviceModal = document.getElementById('service-modal');
+    const serviceForm = document.getElementById('service-form');
+
+    document.getElementById('btn-open-add-service')?.addEventListener('click', () => {
+        document.getElementById('service-modal-title').innerHTML = '<i class="fa-solid fa-bell-concierge" style="color:var(--accent-cyan);"></i> Thêm Dịch Vụ Mới';
+        document.getElementById('service-edit-id').value = '';
+        document.getElementById('service-price').value = '';
+        serviceForm?.reset();
+        serviceModal?.classList.add('active');
+    });
+
+    document.getElementById('close-service-modal')?.addEventListener('click', () => {
+        serviceModal?.classList.remove('active');
+    });
+
+    serviceModal?.addEventListener('click', (e) => {
+        if (e.target === serviceModal) serviceModal.classList.remove('active');
+    });
+
+    serviceForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const editId = document.getElementById('service-edit-id').value;
+        const title = document.getElementById('service-title').value.trim();
+        const price = Number(document.getElementById('service-price').value) || 0;
+        const description = document.getElementById('service-desc').value.trim();
+        const icon = document.getElementById('service-icon').value;
+
+        const rawUser = localStorage.getItem('motogo_user') || localStorage.getItem('currentUser');
+        const user = rawUser ? JSON.parse(rawUser) : null;
+        const ownerEmail = user?.email || null;
+
+        const btnSave = document.getElementById('btn-save-service');
+        const origBtnText = btnSave?.innerHTML || '';
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+        }
+
+        try {
+            const apiCandidates = [
+                editId ? `/api/services/${editId}` : '/api/services',
+                editId ? `http://localhost:5000/api/services/${editId}` : 'http://localhost:5000/api/services',
+                editId ? `http://127.0.0.1:5000/api/services/${editId}` : 'http://127.0.0.1:5000/api/services'
+            ];
+            const method = editId ? 'PUT' : 'POST';
+            let res = null;
+            let success = false;
+
+            for (const url of apiCandidates) {
+                try {
+                    res = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, description, price, icon, ownerEmail })
+                    });
+                    if (res && res.ok) {
+                        success = true;
+                        break;
+                    }
+                } catch {
+                    // Thử URL tiếp theo
+                }
+            }
+
+            if (success) {
+                alert(editId ? 'Cập nhật dịch vụ thành công!' : 'Đã thêm dịch vụ mới thành công!');
+                serviceModal?.classList.remove('active');
+                serviceForm.reset();
+                await loadOwnerServices();
+            } else {
+                const errData = res ? await res.json().catch(() => ({})) : {};
+                alert(errData.message || 'Lưu dịch vụ thất bại!');
+            }
+        } catch (err) {
+            alert('Lỗi kết nối tới máy chủ! (' + (err.message || 'Error') + ')');
+        } finally {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = origBtnText;
+            }
+        }
+    });
 
     document.getElementById('btn-owner-logout')?.addEventListener('click', () => {
         if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi Kênh Người cho thuê xe?')) {
@@ -413,6 +574,125 @@ function initModalEvents() {
     });
 }
 
+// --------------------------------------------------------------------------
+// 4. QUẢN LÝ DỊCH VỤ CỦA CHỦ XE (CRUD SERVICES)
+// --------------------------------------------------------------------------
+async function loadOwnerServices() {
+    const tbody = document.getElementById('owner-service-list');
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:25px;color:#94a3b8;">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách dịch vụ...
+        </td></tr>`;
+    }
+
+    const rawUser = localStorage.getItem('motogo_user') || localStorage.getItem('currentUser');
+    const user = rawUser ? JSON.parse(rawUser) : null;
+    const ownerEmail = user?.email || '';
+
+    const apiCandidates = [
+        `/api/services?ownerEmail=${encodeURIComponent(ownerEmail)}`,
+        `http://localhost:5000/api/services?ownerEmail=${encodeURIComponent(ownerEmail)}`,
+        `http://127.0.0.1:5000/api/services?ownerEmail=${encodeURIComponent(ownerEmail)}`
+    ];
+
+    ownerServices = [];
+    for (const url of apiCandidates) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                ownerServices = Array.isArray(data) ? data : (Array.isArray(data.value) ? data.value : []);
+                break;
+            }
+        } catch {
+            // Thử endpoint tiếp theo
+        }
+    }
+
+    renderOwnerServices(ownerServices);
+}
+
+function renderOwnerServices(services) {
+    const tbody = document.getElementById('owner-service-list');
+    if (!tbody) return;
+
+    if (!services || services.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:#94a3b8;">
+            <i class="fa-solid fa-bell-concierge" style="font-size:2rem;color:#334155;display:block;margin-bottom:8px;"></i>
+            Chưa có dịch vụ nào. Hãy bấm <strong>"Thêm Dịch Vụ Mới"</strong> để tạo dịch vụ cho cơ sở của bạn!
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = services.map(s => {
+        const priceDisplay = s.price > 0 ? `${(s.price).toLocaleString('vi-VN')}đ` : '<span style="color:var(--success);">Miễn phí</span>';
+        return `
+        <tr>
+            <td>
+                <div style="width:40px;height:40px;background:var(--bg-surface);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--accent-cyan);font-size:1.1rem;">
+                    <i class="${escapeHTML(s.icon || 'fa-solid fa-truck-fast')}"></i>
+                </div>
+            </td>
+            <td><strong>${escapeHTML(s.title)}</strong></td>
+            <td><strong style="color:var(--accent-cyan);">${priceDisplay}</strong></td>
+            <td style="color:var(--text-secondary);font-size:0.88rem;max-width:280px;">${escapeHTML(s.description)}</td>
+            <td style="text-align:right;">
+                <button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;margin-right:6px;" onclick="openEditServiceModal('${s._id}')">
+                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                </button>
+                <button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;color:var(--danger);border-color:var(--danger);" onclick="deleteService('${s._id}')">
+                    <i class="fa-solid fa-trash"></i> Xóa
+                </button>
+            </td>
+        </tr>
+    `;
+    }).join('');
+}
+
+window.openEditServiceModal = function (serviceId) {
+    const service = ownerServices.find(s => s._id === serviceId);
+    if (!service) return;
+
+    document.getElementById('service-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--accent-cyan);"></i> Cập Nhật Dịch Vụ';
+    document.getElementById('service-edit-id').value = service._id;
+    document.getElementById('service-title').value = service.title;
+    document.getElementById('service-price').value = service.price || 0;
+    document.getElementById('service-desc').value = service.description;
+    document.getElementById('service-icon').value = service.icon || 'fa-solid fa-truck-fast';
+
+    document.getElementById('service-modal')?.classList.add('active');
+};
+
+window.deleteService = async function (serviceId) {
+    if (!confirm('Bạn có chắc muốn xóa dịch vụ này không?')) return;
+
+    const apiCandidates = [
+        `/api/services/${serviceId}`,
+        `http://localhost:5000/api/services/${serviceId}`,
+        `http://127.0.0.1:5000/api/services/${serviceId}`
+    ];
+
+    let success = false;
+    for (const url of apiCandidates) {
+        try {
+            const res = await fetch(url, { method: 'DELETE' });
+            if (res.ok) {
+                success = true;
+                break;
+            }
+        } catch {
+            // Thử endpoint tiếp theo
+        }
+    }
+
+    if (success) {
+        alert('Đã xóa dịch vụ thành công!');
+        await loadOwnerServices();
+    } else {
+        alert('Không thể xóa dịch vụ. Vui lòng thử lại!');
+    }
+};
+
 // KHỞI ĐỘNG KHI TẢI TRANG
 function initOwnerApp() {
     const user = initOwnerSession();
@@ -420,6 +700,7 @@ function initOwnerApp() {
         initModalEvents();
         loadOwnerBikes();
         loadOwnerBookings();
+        loadOwnerServices();
     }
 }
 

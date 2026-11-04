@@ -13,8 +13,9 @@ const BIKE_API_CANDIDATES = [
 
 // State toàn cục
 const AppState = {
-    bikes: [],         // Toàn bộ dữ liệu xe từ MongoDB
-    selectedBike: null // Xe đang được chọn để đặt thuê
+    bikes: [],            // Toàn bộ dữ liệu xe từ MongoDB
+    selectedBike: null,   // Xe đang được chọn để đặt thuê
+    services: []          // Dịch vụ của chủ xe lấy từ MongoDB
 };
 
 // Bộ nhớ đệm DOM
@@ -227,6 +228,51 @@ function applyFiltersAndSort() {
 // --------------------------------------------------------------------------
 // 8. MODAL ĐẶT XE
 // --------------------------------------------------------------------------
+async function loadModalServices(ownerEmail) {
+    const selectEl = document.getElementById('extra-service-select');
+    if (!selectEl) return;
+
+    selectEl.innerHTML = '<option value="" data-price="0">Đang tải dịch vụ...</option>';
+
+    try {
+        let services = [];
+
+        // 1. Nếu xe có email chủ xe, ưu tiên lấy dịch vụ của chủ xe đó
+        if (ownerEmail) {
+            const res = await fetch(`/api/services?ownerEmail=${encodeURIComponent(ownerEmail)}`);
+            if (res.ok) {
+                const data = await res.json();
+                services = Array.isArray(data) ? data : (Array.isArray(data.value) ? data.value : []);
+            }
+        }
+
+        // 2. Nếu chủ xe chưa có dịch vụ riêng hoặc xe không gán chủ xe, tải toàn bộ dịch vụ trên hệ thống
+        if (services.length === 0) {
+            const fallbackRes = await fetch('/api/services');
+            if (fallbackRes.ok) {
+                const fbData = await fallbackRes.json();
+                services = Array.isArray(fbData) ? fbData : (Array.isArray(fbData.value) ? fbData.value : []);
+            }
+        }
+
+        AppState.services = services;
+
+        let optionsHTML = '<option value="" data-price="0">Không chọn dịch vụ thêm (Mặc định)</option>';
+
+        if (services.length > 0) {
+            optionsHTML += services.map(s => {
+                const priceNum = s.price || 0;
+                const priceTag = priceNum > 0 ? `(+${priceNum.toLocaleString('vi-VN')}đ)` : '(Miễn phí)';
+                return `<option value="${s._id}" data-title="${escapeHTML(s.title)}" data-price="${priceNum}">${escapeHTML(s.title)} ${priceTag}</option>`;
+            }).join('');
+        }
+
+        selectEl.innerHTML = optionsHTML;
+    } catch {
+        selectEl.innerHTML = '<option value="" data-price="0">Không chọn dịch vụ thêm (Mặc định)</option>';
+    }
+}
+
 window.openBookingModal = function (bikeId) {
     const bike = AppState.bikes.find(b => String(b.id) === String(bikeId));
     if (!bike) return;
@@ -249,6 +295,9 @@ window.openBookingModal = function (bikeId) {
         if (DOM.customerPhone && user.phone) DOM.customerPhone.value = user.phone;
     }
 
+    // Tải danh sách dịch vụ của chủ xe vào dropdown select
+    loadModalServices(bike.ownerEmail);
+
     updateTotalPrice();
     DOM.bookingModal?.classList.add('active');
 };
@@ -261,8 +310,21 @@ function updateTotalPrice() {
     const diffDays = Math.ceil((end - start) / 86400000);
     const days = diffDays > 0 ? diffDays : 1;
 
-    const delivery = DOM.pickupLocation?.value === 'delivery' ? 30000 : 0;
-    const total = days * (AppState.selectedBike.price || 0) + delivery;
+    const isDelivery = DOM.pickupLocation?.value === 'delivery';
+    const delivery = isDelivery ? 30000 : 0;
+
+    // Hiển thị/ẩn dòng lưu ý chuyển khoản cọc nếu chọn giao xe tận nơi
+    const depositNotice = document.getElementById('deposit-notice');
+    if (depositNotice) {
+        depositNotice.style.display = isDelivery ? 'block' : 'none';
+    }
+
+    // Lấy phí dịch vụ từ Dropdown Select
+    const serviceSelect = document.getElementById('extra-service-select');
+    const selectedOption = serviceSelect?.options[serviceSelect.selectedIndex];
+    const servicePrice = Number(selectedOption?.dataset?.price) || 0;
+
+    const total = (days * (AppState.selectedBike.price || 0)) + delivery + servicePrice;
 
     if (DOM.totalDays) DOM.totalDays.textContent = `${days} ngày`;
     if (DOM.totalPrice) DOM.totalPrice.textContent = formatVND(total);
@@ -273,8 +335,198 @@ function closeBookingModal() {
 }
 
 // --------------------------------------------------------------------------
-// 9. KIỂM TRA PHIÊN ĐĂNG NHẬP
+// 9.5. LỊCH SỬ THUÊ XE CỦA NGƯỜI DÙNG (ĐƠN CỦA TÔI)
 // --------------------------------------------------------------------------
+async function openMyBookingsModal() {
+    const modal = document.getElementById('my-bookings-modal');
+    const listContainer = document.getElementById('my-bookings-list');
+    if (!modal || !listContainer) return;
+
+    modal.classList.add('active');
+    listContainer.innerHTML = `
+        <div style="text-align:center; padding:30px; color:var(--text-secondary);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:var(--royal-blue); margin-bottom:10px; display:block;"></i>
+            Đang tải lịch sử đơn thuê xe của bạn...
+        </div>`;
+
+    const user = getStoredUser();
+    const queryParts = [];
+    if (user?.phone) queryParts.push(`customerPhone=${encodeURIComponent(user.phone)}`);
+    if (user?.email) queryParts.push(`customerEmail=${encodeURIComponent(user.email)}`);
+    const queryParam = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
+
+    const apiCandidates = [
+        `/api/bookings${queryParam}`,
+        `http://localhost:5000/api/bookings${queryParam}`,
+        `http://127.0.0.1:5000/api/bookings${queryParam}`
+    ];
+
+    let bookings = [];
+    for (const url of apiCandidates) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                bookings = Array.isArray(data) ? data : (Array.isArray(data.value) ? data.value : []);
+                break;
+            }
+        } catch { /* thử endpoint tiếp theo */ }
+    }
+
+    // Cập nhật số lượng trên badge
+    updateBookingBadge(bookings.length);
+
+    if (bookings.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">
+                <i class="fa-solid fa-receipt" style="font-size:2.5rem; color:#334155; margin-bottom:12px; display:block;"></i>
+                <h4 style="color:var(--text-primary); margin-bottom:6px;">Bạn chưa có đơn thuê xe nào</h4>
+                <p style="font-size:0.9rem;">Hãy chọn một mẫu xe yêu thích và đặt chuyến đi ngay hôm nay!</p>
+            </div>`;
+        return;
+    }
+
+    const statusMap = {
+        pending:   { label: 'Treo đơn (Chờ xác nhận)', cls: 'pending',   icon: 'fa-regular fa-clock' },
+        approved:  { label: 'Đã xác nhận',              cls: 'approved',  icon: 'fa-solid fa-check' },
+        completed: { label: 'Đã hoàn tất',             cls: 'completed', icon: 'fa-solid fa-circle-check' },
+        cancelled: { label: 'Đã hủy',                  cls: 'cancelled', icon: 'fa-solid fa-xmark' }
+    };
+
+    listContainer.innerHTML = bookings.map(b => {
+        let st = statusMap[b.status] || statusMap.pending;
+
+        // Nếu chủ xe đã xác nhận (approved) -> hiển thị phân nhánh theo hình thức nhận xe
+        if (b.status === 'approved') {
+            if (b.locationType === 'delivery') {
+                st = { label: 'Đang giao xe', cls: 'approved', icon: 'fa-solid fa-truck-fast' };
+            } else {
+                st = { label: 'Xe đã chuẩn bị xong', cls: 'approved', icon: 'fa-solid fa-motorcycle' };
+            }
+        }
+
+        const bookingId = b.bookingId || ('BKG-' + (b._id || '').slice(-5));
+        const servicesText = Array.isArray(b.selectedServices) && b.selectedServices.length > 0
+            ? `<div style="font-size:0.8rem; color:var(--accent-cyan); margin-top:3px;">
+                <i class="fa-solid fa-bell-concierge"></i> Dịch vụ: ${b.selectedServices.map(s => escapeHTML(s.title)).join(', ')}
+               </div>`
+            : '';
+
+        // Treo xe trong 5 phút chờ chủ xe duyệt - cho phép khách hủy và đếm ngược
+        let cancelButtonHTML = '';
+        if (b.status === 'pending') {
+            const createdAt = b.createdAt ? new Date(b.createdAt).getTime() : Date.now();
+            const elapsedSeconds = Math.floor((Date.now() - createdAt) / 1000);
+            const remainingSeconds = 300 - elapsedSeconds;
+
+            if (remainingSeconds > 0) {
+                const remMinutes = Math.floor(remainingSeconds / 60);
+                const remSecs = remainingSeconds % 60;
+                const timeStr = `${remMinutes}:${remSecs < 10 ? '0' : ''}${remSecs}`;
+
+                cancelButtonHTML = `
+                    <div style="font-size:0.75rem; color:#f59e0b; margin-top:4px;">
+                        <i class="fa-regular fa-clock"></i> Treo xe còn lại: ${timeStr}
+                    </div>
+                    <button type="button" class="btn btn-outline btn-cancel-booking" 
+                            style="margin-top:6px; padding:3px 10px; font-size:0.78rem; color:var(--danger); border-color:var(--danger);"
+                            onclick="cancelMyBooking('${escapeHTML(bookingId)}')">
+                        <i class="fa-solid fa-ban"></i> Hủy đơn
+                    </button>
+                `;
+            }
+        }
+
+        return `
+            <div class="my-booking-card">
+                <div class="my-booking-info">
+                    <h4><i class="fa-solid fa-motorcycle"></i> ${escapeHTML(b.bikeName || 'Xe máy')}</h4>
+                    <div class="my-booking-meta">
+                        <span># Mã đơn: <strong>${escapeHTML(bookingId)}</strong></span>
+                        <span><i class="fa-regular fa-calendar"></i> Thuê: ${escapeHTML(b.pickupDate || '')} &rarr; Trả: ${escapeHTML(b.returnDate || '')}</span>
+                        ${servicesText}
+                    </div>
+                </div>
+                <div class="my-booking-status-side">
+                    <span class="my-booking-status-badge ${st.cls}">
+                        <i class="${st.icon}"></i> ${st.label}
+                    </span>
+                    <div class="my-booking-price">${formatVND(b.totalPrice)}</div>
+                    <span class="my-booking-days">(${b.days || 1} ngày)</span>
+                    ${cancelButtonHTML}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.cancelMyBooking = async function (bookingId) {
+    if (!confirm(`Bạn có chắc chắn muốn hủy đơn đặt xe "${bookingId}" không?`)) return;
+
+    const apiCandidates = [
+        `/api/bookings/${bookingId}/status`,
+        `http://localhost:5000/api/bookings/${bookingId}/status`,
+        `http://127.0.0.1:5000/api/bookings/${bookingId}/status`
+    ];
+
+    let success = false;
+    let message = '';
+
+    for (const url of apiCandidates) {
+        try {
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'cancelled' })
+            });
+
+            if (res.ok) {
+                success = true;
+                break;
+            } else {
+                const err = await res.json().catch(() => ({}));
+                message = err.message || '';
+            }
+        } catch { /* thử endpoint tiếp theo */ }
+    }
+
+    if (success) {
+        alert(` Đã hủy thành công đơn thuê xe ${bookingId}!`);
+        await openMyBookingsModal(); // Tải lại danh sách đơn
+    } else {
+        alert(message || 'Không thể hủy đơn đặt xe lúc này. Vui lòng thử lại!');
+    }
+};
+
+function updateBookingBadge(count) {
+    const badges = document.querySelectorAll('#booking-count');
+    badges.forEach(b => {
+        b.textContent = String(count);
+    });
+}
+
+async function fetchUserBookingCount() {
+    const user = getStoredUser();
+    if (!user) return;
+
+    const queryParts = [];
+    if (user.phone) queryParts.push(`customerPhone=${encodeURIComponent(user.phone)}`);
+    if (user.email) queryParts.push(`customerEmail=${encodeURIComponent(user.email)}`);
+    const queryParam = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
+
+    try {
+        const res = await fetch(`/api/bookings${queryParam}`);
+        if (res.ok) {
+            const data = await res.json();
+            const bookings = Array.isArray(data) ? data : (Array.isArray(data.value) ? data.value : []);
+            updateBookingBadge(bookings.length);
+        }
+    } catch { /* không chặn luồng */ }
+}
+
+function closeMyBookingsModal() {
+    document.getElementById('my-bookings-modal')?.classList.remove('active');
+}
 function checkUserLogin() {
     const user = getStoredUser();
     const loginBtn = document.getElementById('nav-login-btn');
@@ -362,8 +614,25 @@ function bindEventListeners() {
     DOM.pickupDate?.addEventListener('change', updateTotalPrice);
     DOM.returnDate?.addEventListener('change', updateTotalPrice);
     DOM.pickupLocation?.addEventListener('change', updateTotalPrice);
+    document.getElementById('extra-service-select')?.addEventListener('change', updateTotalPrice);
 
     DOM.closeModalBtn?.addEventListener('click', closeBookingModal);
+
+    // Sự kiện mở/đóng Modal Lịch sử Đơn thuê (Đơn của tôi)
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#btn-my-bookings');
+        if (btn) {
+            e.preventDefault();
+            openMyBookingsModal();
+        }
+    });
+
+    document.getElementById('close-my-bookings-modal')?.addEventListener('click', closeMyBookingsModal);
+
+    const myBookingsModal = document.getElementById('my-bookings-modal');
+    myBookingsModal?.addEventListener('click', (e) => {
+        if (e.target === myBookingsModal) closeMyBookingsModal();
+    });
 
     DOM.bookingModal?.addEventListener('click', (e) => {
         if (e.target === DOM.bookingModal) closeBookingModal();
@@ -394,7 +663,23 @@ function bindEventListeners() {
         const end = new Date(returnDate);
         const days = Math.max(1, Math.ceil((end - start) / 86400000));
         const delivery = locationType === 'delivery' ? 30000 : 0;
-        const total = days * (bike.price || 0) + delivery;
+
+        // Lấy dịch vụ được chọn từ Dropdown Select
+        const serviceSelect = document.getElementById('extra-service-select');
+        const selectedOption = serviceSelect?.options[serviceSelect.selectedIndex];
+        const selectedServices = [];
+        let servicesTotal = 0;
+
+        if (serviceSelect && serviceSelect.value) {
+            const price = Number(selectedOption.dataset.price) || 0;
+            servicesTotal = price;
+            selectedServices.push({
+                title: selectedOption.dataset.title || selectedOption.textContent.trim(),
+                price: price
+            });
+        }
+
+        const total = (days * (bike.price || 0)) + delivery + servicesTotal;
 
         const user = getStoredUser();
         const bookingPayload = {
@@ -409,6 +694,7 @@ function bindEventListeners() {
             days,
             locationType,
             totalPrice: total,
+            selectedServices,
             status: 'pending',
             ownerEmail: bike.ownerEmail || null
         };
@@ -498,6 +784,7 @@ function initApp() {
     cacheDOMElements();
     checkUserLogin();
     bindEventListeners();
+    fetchUserBookingCount();
     loadBikes(); // Tải 100% từ MongoDB — không có dữ liệu cứng
 }
 
